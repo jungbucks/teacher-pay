@@ -1,0 +1,42 @@
+<!doctype html><meta charset="utf-8"><title>probe</title>
+<ul id="out"></ul>
+<iframe id="f" src="../index.html" style="width:390px;height:1100px"></iframe>
+<script>
+const out = document.getElementById('out');
+const log = (name, ok) => out.insertAdjacentHTML('beforeend', `<li>${ok ? 'PASS' : 'FAIL'} ${name}</li>`);
+document.getElementById('f').addEventListener('load', () => setTimeout(run, 300));
+const num = t => parseInt(String(t).replace(/[^0-9]/g, ''), 10);
+function run() {
+  const d = document.getElementById('f').contentDocument;
+  const w = document.getElementById('f').contentWindow;
+  const $ = s => d.querySelector(s);
+  try {
+    log('초기 20호봉 월봉급 3,481,000', num($('#salaryVal').textContent) === 3481000);
+    log('정근수당 카드 존재', !!$('#jeonggeun'));
+    log('명절휴가비 = 봉급×60%', num($('#holiday').textContent) === Math.round(3481000 * 0.6));
+    // 호봉 40으로 변경 → 즉시 갱신
+    const hb = $('#hobong'); hb.value = 40; hb.dispatchEvent(new w.Event('input'));
+    log('호봉 40 즉시 반영 6,205,700', num($('#salaryVal').textContent) === 6205700 && $('#hobongVal').textContent === '40');
+    // 근무연수 4년 → 가산금 0, 지급률 20%
+    const yr = $('#years'); yr.value = 4; yr.dispatchEvent(new w.Event('input'));
+    log('근무 4년 → 가산금 0', num($('#gasan').textContent) === 0);
+    log('근무 4년 → 정근수당 20%', $('#rateTag').textContent === '20%');
+    // 근무연수 10년 → 지급률 50%, 가산금 60,000
+    yr.value = 10; yr.dispatchEvent(new w.Event('input'));
+    log('근무 10년 → 지급률 50%', $('#rateTag').textContent === '50%');
+    log('근무 10년 → 가산금 60,000', num($('#gasan').textContent) === 60000);
+    // 연간 합계 = 정근×2 + 가산×12 + 명절×2
+    const jg = num($('#jeonggeun').textContent), ga = num($('#gasan').textContent), ho = num($('#holiday').textContent);
+    log('연간 합계 산식 일치', num($('#annual').textContent) === jg * 2 + ga * 12 + ho * 2);
+    // + 스텝 버튼
+    $('#hbPlus').click();
+    log('스텝 버튼 상한 40 유지', $('#hobongVal').textContent === '40');
+    log('가산금 검수 플래그 노출', !$('#gasanFlag').hidden);
+    log('참고용 고지 존재', d.body.textContent.includes('참고용') && d.body.textContent.includes('인사혁신처'));
+    const fs = parseFloat(getComputedStyle($('.li-note')).fontSize);
+    log('설명 글자 ≥13px', fs >= 13);
+  } catch (e) { log('예외: ' + e.message, false); }
+  const fails = [...out.querySelectorAll('li')].filter(li => li.textContent.startsWith('FAIL')).length;
+  document.title = `PROBE ${out.querySelectorAll('li').length}건 — FAIL ${fails}`;
+}
+</script>

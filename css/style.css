@@ -1,0 +1,96 @@
+/* 교사 수당 계산기 — 연속용지 급여대장(greenbar) 명세서 모티프.
+   금액은 전부 모노스페이스 우측정렬(₩ 칼럼). 직인 레드는 합계 도장 한 곳에만. */
+:root {
+  --paper: #f4f7f0; --bar: #e7f0e4; --ink: #232a24; --dim: #5d6b5e;
+  --money: #1f6b4a; --seal: #c0392b; --rule: #c3cfbe; --line-strong: #8a9a86;
+  --mono: "Consolas", "D2Coding", "Menlo", monospace;
+}
+* { box-sizing: border-box; margin: 0; }
+body { background: var(--paper); color: var(--ink);
+  font-family: "Pretendard", "Malgun Gothic", system-ui, sans-serif; font-size: 16px; line-height: 1.6; }
+:focus-visible { outline: 2px solid var(--money); outline-offset: 2px; }
+
+/* 머리글 */
+.masthead { max-width: 60rem; margin: 0 auto; padding: 2.5rem 1.25rem 1.5rem; }
+.kicker { font-size: 0.85rem; font-weight: 700; letter-spacing: 0.12em; color: var(--money); margin-bottom: 0.6rem; }
+.masthead h1 { font-size: 2rem; font-weight: 900; line-height: 1.25; letter-spacing: -0.02em; }
+
+/* 레이아웃 */
+.sheet-grid { max-width: 60rem; margin: 0 auto; padding: 0 1.25rem 2rem; display: grid; gap: 1.5rem; }
+@media (min-width: 820px) { .sheet-grid { grid-template-columns: 20rem 1fr; align-items: start; } }
+
+/* 컨트롤 */
+.controls { display: grid; gap: 1.1rem; }
+.ctrl { background: #fff; border: 1px solid var(--rule); border-radius: 12px; padding: 1.1rem; }
+.ctrl > label { display: block; font-weight: 800; margin-bottom: 0.6rem; }
+.unit { font-weight: 600; color: var(--dim); font-size: 0.85rem; }
+.hobong-row { display: flex; align-items: center; gap: 0.6rem; }
+.step { width: 2.6rem; height: 2.6rem; border: 1px solid var(--line-strong); background: var(--paper); border-radius: 10px;
+  font: inherit; font-size: 1.4rem; font-weight: 800; color: var(--ink); cursor: pointer; }
+.step:hover { background: var(--bar); }
+.hobong-val { flex: 1; text-align: center; font-family: var(--mono); font-size: 2.4rem; font-weight: 700; color: var(--money); }
+input[type="range"] { width: 100%; margin-top: 0.7rem; accent-color: var(--money); }
+.salary-line { margin-top: 0.7rem; color: var(--dim); }
+.salary-line b { font-family: var(--mono); color: var(--ink); font-size: 1.05rem; }
+#years { width: 100%; border: 1px solid var(--line-strong); border-radius: 10px; padding: 0.6rem 0.7rem;
+  font-family: var(--mono); font-size: 1.3rem; font-weight: 700; background: var(--paper); }
+.hint { margin-top: 0.5rem; font-size: 0.82rem; color: var(--dim); }
+
+/* 급여대장 명세서 (시그니처) */
+.payslip { display: grid; grid-template-columns: 14px 1fr 14px; background:
+  repeating-linear-gradient(0deg, #fff 0 28px, var(--bar) 28px 56px);
+  border: 1px solid var(--rule); border-radius: 6px; box-shadow: 0 6px 22px rgba(31, 42, 32, 0.09); overflow: hidden; }
+.perf { background: #eef2ea; border-left: 1px dashed var(--rule); border-right: 1px dashed var(--rule);
+  background-image: radial-gradient(circle, #cdd6c8 2.6px, transparent 2.9px); background-size: 14px 22px; background-position: center 8px; }
+.slip-body { position: relative; padding: 1.3rem 1.2rem 1.6rem; }
+.slip-title { font-weight: 800; letter-spacing: 0.14em; }
+.slip-sub { float: right; font-size: 0.78rem; letter-spacing: normal; font-weight: 700; color: var(--dim);
+  border: 1px solid var(--rule); border-radius: 5px; padding: 0.05rem 0.4rem; }
+.rule { height: 0; border-top: 1px solid var(--line-strong); margin: 0.7rem 0; }
+.rule.double { border-top: 3px double var(--line-strong); margin: 0.9rem 0 0.7rem; }
+
+.line { display: flex; align-items: baseline; justify-content: space-between; gap: 0.8rem; }
+.li-name { font-weight: 700; min-width: 0; }
+.li-amt { flex: 0 0 auto; }
+.li-name i { font-style: normal; font-family: var(--mono); font-size: 0.85rem; font-weight: 700; color: var(--money);
+  background: rgba(31, 107, 74, 0.1); border-radius: 5px; padding: 0.05rem 0.4rem; margin-left: 0.3rem; }
+.li-amt { font-family: var(--mono); white-space: nowrap; }
+.li-amt b { font-size: 1.35rem; font-weight: 700; color: var(--money); }
+.li-note { font-size: 0.82rem; color: var(--dim); margin: 0.15rem 0 0.9rem; }
+.li-note b { color: var(--ink); }
+.flag { font-style: normal; color: var(--seal); font-weight: 700; border: 1px solid var(--seal); border-radius: 5px;
+  padding: 0 0.35rem; font-size: 0.75rem; margin-left: 0.3rem; }
+
+.line.total .li-name { font-size: 1.15rem; font-weight: 900; }
+.line.total .li-amt b { font-size: 1.7rem; color: var(--ink); }
+
+/* 직인 도장 — 대담함은 여기 한 곳에만 */
+.seal { position: absolute; right: 1.1rem; bottom: 1.1rem; width: 3.6rem; height: 3.6rem;
+  border: 3px solid var(--seal); border-radius: 50%; color: var(--seal); font-weight: 900; line-height: 1.05;
+  display: grid; place-content: center; text-align: center; transform: rotate(-11deg); opacity: 0.85;
+  font-size: 1rem; letter-spacing: 0.05em; }
+
+/* 숫자 갱신 틱 */
+.tick { animation: tick 0.35s ease; }
+@keyframes tick { 0% { color: var(--seal); transform: translateY(-2px); } 100% { } }
+
+/* 꼬리말 */
+.colophon { max-width: 60rem; margin: 0 auto; padding: 0 1.25rem 3rem; color: var(--dim); font-size: 0.9rem; }
+.colophon p + p { margin-top: 0.5rem; }
+.colophon b { color: var(--ink); }
+.src { font-size: 0.82rem; }
+
+@media (prefers-reduced-motion: reduce) { .tick { animation: none; } }
+@media (max-width: 819px) {
+  .masthead h1 { font-size: 1.7rem; }
+}
+/* 좁은 화면: 금액이 ₩ 칼럼 밖으로 넘치지 않게 축소 + 천공 스트립 슬림 */
+@media (max-width: 480px) {
+  body { overflow-x: hidden; }
+  .payslip { grid-template-columns: 9px 1fr 9px; }
+  .perf { background-size: 9px 20px; }
+  .slip-body { padding: 1.1rem 0.9rem 1.5rem; }
+  .li-amt b { font-size: 1.15rem; }
+  .line.total .li-amt b { font-size: 1.4rem; }
+  .seal { width: 3rem; height: 3rem; font-size: 0.9rem; right: 0.7rem; bottom: 0.7rem; }
+}
