@@ -93,6 +93,49 @@ input[type="range"] { width: 100%; accent-color: var(--brand); margin: 0.3rem 0 
   color: var(--brand); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .annual-amt .won { font-family: var(--font-body); font-weight: 700; font-size: 1rem; margin-left: 0.15rem; }
 
+/* 클릭 가능한 수당 행 (→ 연차별 모달) */
+.row-btn { width: 100%; margin: 0 0 0 -0.4rem; padding: 0.2rem 0.4rem; border: none; background: none;
+  font: inherit; color: inherit; cursor: pointer; border-radius: 8px; transition: background .12s; }
+.row-btn:hover, .row-btn:focus-visible { background: var(--brand-tint); }
+.row-more { font-family: var(--font-body); font-weight: 700; font-size: 0.72rem; color: var(--ink-faint);
+  margin-left: 0.5rem; white-space: nowrap; transition: color .12s; }
+.row-btn:hover .row-more, .row-btn:focus-visible .row-more { color: var(--brand); }
+
+/* @jungbucks 서명 스탬프 — 지난 빨간 직인과 달리 절제된 초록 서명 */
+.stamp-wrap { display: flex; justify-content: flex-end; margin-top: 0.7rem; }
+.stamp { display: inline-block; font-family: var(--font-display); font-weight: 700; font-size: 0.82rem;
+  letter-spacing: 0.02em; color: var(--brand); border: 1.5px solid var(--brand); border-radius: 8px;
+  padding: 0.2rem 0.6rem; transform: rotate(-4deg); opacity: 0.82; }
+
+/* 연차별 지급표 모달 */
+.modal { border: none; padding: 0; background: transparent; width: 100%; max-width: min(92vw, 420px);
+  border-radius: 16px; box-shadow: 0 20px 60px rgba(20, 30, 25, 0.28); color: var(--ink); }
+.modal::backdrop { background: rgba(26, 29, 27, 0.45); }
+.modal-card { background: var(--surface); border-radius: 16px; padding: 1.4rem 1.4rem 1.2rem; }
+.modal-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.3rem; }
+.modal-head h3 { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; color: var(--ink); }
+.modal-x { border: none; background: none; font-size: 1.6rem; line-height: 1; color: var(--ink-faint);
+  cursor: pointer; padding: 0.05rem 0.35rem; border-radius: 8px; }
+.modal-x:hover { background: var(--field); color: var(--ink); }
+.modal-sub { font-size: 0.88rem; color: var(--ink-soft); margin-bottom: 0.9rem; line-height: 1.5; }
+.modal-sub b { color: var(--ink); font-weight: 700; }
+.rate-table { width: 100%; border-collapse: collapse; }
+.rate-table th, .rate-table td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--line); }
+.rate-table th { font-size: 0.75rem; font-weight: 700; color: var(--ink-faint); letter-spacing: 0.02em; }
+.rate-table th.ar, .rate-table td.amt { text-align: right; }
+.rate-table td { font-size: 0.95rem; color: var(--ink); }
+.rate-table td.amt { font-family: var(--font-display); font-weight: 700; font-variant-numeric: tabular-nums; }
+.rate-table td .sub { display: block; font-size: 0.72rem; color: var(--ink-faint); font-weight: 500; }
+.rate-table tr:last-child td { border-bottom: none; }
+.rate-table tr.cur td { background: var(--brand-tint); color: var(--brand-strong); font-weight: 700; }
+.rate-table tr.cur td.amt { color: var(--brand); }
+.rate-table tr.cur td:first-child { border-radius: 8px 0 0 8px; }
+.rate-table tr.cur td:last-child { border-radius: 0 8px 8px 0; }
+.modal-foot { font-size: 0.76rem; color: var(--ink-faint); margin-top: 0.8rem; line-height: 1.5; }
+.modal-foot b { color: var(--brand); }
+.modal[open] { animation: modalpop 0.16s ease; }
+@keyframes modalpop { from { transform: translateY(8px); opacity: 0.4; } }
+
 /* ── 시그니처: 월별 수당 지급 타임라인 ── */
 .timeline { margin-top: 1.2rem; padding-top: 1.1rem; border-top: 1px solid var(--line); }
 .tl-title { font-family: var(--font-display); font-weight: 700; font-size: 0.9rem; color: var(--ink-soft); }
@@ -167,7 +210,7 @@ input[type="range"] { width: 100%; accent-color: var(--brand); margin: 0.3rem 0 
 .colophon b { color: var(--ink-soft); }
 .colophon .src { font-size: 0.82rem; }
 
-@media (prefers-reduced-motion: reduce) { .tick { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .tick, .modal[open] { animation: none; } }
 
 /* ── 모바일 ── */
 @media (max-width: 520px) {

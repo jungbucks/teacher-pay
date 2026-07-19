@@ -22,6 +22,12 @@ const el = {
   copyBtn: document.getElementById('copyBtn'),
   pngBtn: document.getElementById('pngBtn'),
   actMsg: document.getElementById('actMsg'),
+  jgBtn: document.getElementById('jgBtn'),
+  gaBtn: document.getElementById('gaBtn'),
+  dlgJg: document.getElementById('dlgJg'),
+  dlgGa: document.getElementById('dlgGa'),
+  jgTableBody: document.getElementById('jgTableBody'),
+  gaTableBody: document.getElementById('gaTableBody'),
 };
 
 const YR_MIN = 0, YR_MAX = 45;
@@ -90,6 +96,41 @@ function renderTimeline() {
   }
   track.innerHTML = html;
 }
+
+/* ── 연차별 지급표 모달 (표시 전용 — jeonggeunRate·gasangeum 재사용, 숫자 안 지어냄) ── */
+function renderJgTable(years) {
+  const cur = years >= 10 ? 10 : Math.max(0, years);
+  let html = '';
+  for (let k = 0; k <= 10; k++) {
+    const label = k === 0 ? '1년 미만' : k === 10 ? '10년 이상' : k + '년';
+    html += `<tr class="${k === cur ? 'cur' : ''}"><td>${label}</td><td class="amt">${jeonggeunRate(k)}%</td></tr>`;
+  }
+  el.jgTableBody.innerHTML = html;
+}
+
+const GA_TIERS = [
+  { y: 0, label: '1년 미만 ~ 4년', lo: 0, hi: 4 },
+  { y: 5, label: '5년 ~ 9년', lo: 5, hi: 9 },
+  { y: 10, label: '10년 ~ 14년', lo: 10, hi: 14 },
+  { y: 15, label: '15년 ~ 19년', lo: 15, hi: 19 },
+  { y: 20, label: '20년 ~ 24년', lo: 20, hi: 24, extra: '기본 10만 + 추가 1만' },
+  { y: 25, label: '25년 이상', lo: 25, hi: Infinity, extra: '기본 10만 + 추가 3만' },
+];
+function renderGaTable(years) {
+  el.gaTableBody.innerHTML = GA_TIERS.map(t => {
+    const isCur = years >= t.lo && years <= t.hi;
+    const sub = t.extra ? `<span class="sub">${t.extra}</span>` : '';
+    return `<tr class="${isCur ? 'cur' : ''}"><td>${t.label}</td><td class="amt">${won(gasangeum(t.y))}원${sub}</td></tr>`;
+  }).join('');
+}
+function openModal(dlg, renderFn) {
+  renderFn(state().years);
+  if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+}
+[el.dlgJg, el.dlgGa].forEach(dlg => {
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });   // 백드롭 클릭 닫기
+  dlg.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => dlg.close()));
+});
 
 /* 결과 요약 텍스트 */
 function summaryText() {
@@ -171,7 +212,18 @@ function drawSlip() {
   ctx.fillText(won(r.annual) + '원', W - 46, y + 40);
 
   ctx.textBaseline = 'alphabetic'; ctx.fillStyle = FAINT; ctx.font = F(400, 11.5); ctx.textAlign = 'left';
-  ctx.fillText('출처: 인사혁신처 2026 공무원봉급표 · 공무원수당규정(별표2) · 개인 상황에 따라 다를 수 있는 참고용', 28, H - 18);
+  ctx.fillText('출처: 인사혁신처 2026 공무원봉급표 · 공무원수당규정(별표2) · 개인 상황에 따라 다를 수 있는 참고용', 28, H - 30);
+
+  // @jungbucks 서명 스탬프 (절제된 초록, 우하단)
+  ctx.save();
+  ctx.translate(W - 78, y + 82); ctx.rotate(-5 * Math.PI / 180);
+  ctx.globalAlpha = 0.82; ctx.strokeStyle = BRAND; ctx.lineWidth = 1.5;
+  const sw = 104, sh = 30;
+  if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(-sw / 2, -sh / 2, sw, sh, 8); ctx.stroke(); }
+  else { ctx.strokeRect(-sw / 2, -sh / 2, sw, sh); }
+  ctx.fillStyle = BRAND; ctx.font = P(700, 14); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('@jungbucks', 0, 1);
+  ctx.restore();
   return { cv, hobong, years };
 }
 
@@ -205,6 +257,8 @@ el.hobongTable.addEventListener('click', e => {
 });
 el.copyBtn.addEventListener('click', copyResult);
 el.pngBtn.addEventListener('click', savePng);
+el.jgBtn.addEventListener('click', () => openModal(el.dlgJg, renderJgTable));
+el.gaBtn.addEventListener('click', () => openModal(el.dlgGa, renderGaTable));
 
 renderHobongTable();
 renderTimeline();

@@ -54,16 +54,16 @@
     <p class="card-head">급여 명세 <span class="chip">2026 · 세전</span></p>
 
     <div class="rows">
-      <div class="row">
-        <span class="row-name">정근수당 <i class="rate" id="rateTag">50%</i></span>
+      <button class="row row-btn" id="jgBtn" type="button" aria-haspopup="dialog">
+        <span class="row-name">정근수당 <i class="rate" id="rateTag">50%</i><span class="row-more">연차별 ▸</span></span>
         <span class="row-amt"><b class="num" id="jeonggeun">1,740,500</b><span class="won">원</span></span>
-      </div>
+      </button>
       <p class="li-note">월봉급액 × 지급률 · <b>1월·7월</b> 각각 지급</p>
 
-      <div class="row">
-        <span class="row-name">정근수당 가산금</span>
+      <button class="row row-btn" id="gaBtn" type="button" aria-haspopup="dialog">
+        <span class="row-name">정근수당 가산금<span class="row-more">연차별 ▸</span></span>
         <span class="row-amt"><b class="num" id="gasan">60,000</b><span class="per">원/월</span></span>
-      </div>
+      </button>
       <p class="li-note">근무연수 구간별 정액 · <b>매월</b> 지급 → 연 <b class="yr num" id="gasanYear">720,000</b>원 <i class="flag" id="gasanFlag" hidden>검수 예정</i></p>
 
       <div class="row">
@@ -77,6 +77,7 @@
       <span class="annual-name">연간 합계<small>정근수당 ×2 + 가산금 ×12 + 명절휴가비 ×2</small></span>
       <span class="annual-amt"><b class="num" id="annual">8,378,200</b><span class="won">원</span></span>
     </div>
+    <div class="stamp-wrap"><span class="stamp" aria-label="제작 @jungbucks">@jungbucks</span></div>
 
     <!-- 시그니처: 월별 수당 지급 타임라인 -->
     <div class="timeline" aria-label="월별 수당 지급 시점">
@@ -128,6 +129,37 @@
   <p><b>2026년 교원 봉급표 기준의 참고용 계산기입니다.</b> 개인 상황(중도 임용·감봉·근무연수 산입 예외 등)에 따라 실제 지급액과 다를 수 있습니다.</p>
   <p class="src">봉급표 출처: 인사혁신처 2026 공무원봉급표 · 수당 규정: 공무원수당 등에 관한 규정(별표2). 글꼴: Paperlogy(OFL).</p>
 </footer>
+
+<!-- 연차별 지급표 모달 (표시 전용 — 검증된 규정 함수 재사용) -->
+<dialog id="dlgJg" class="modal" aria-labelledby="dlgJgTitle">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 id="dlgJgTitle">정근수당 · 연차별 지급률</h3>
+      <button class="modal-x" type="button" data-close aria-label="닫기">×</button>
+    </div>
+    <p class="modal-sub">근무연수에 따라 월봉급액의 이 비율을 <b>1월·7월</b> 각각 받습니다. (호봉과 무관한 지급률)</p>
+    <table class="rate-table">
+      <thead><tr><th>근무연수</th><th class="ar">지급률</th></tr></thead>
+      <tbody id="jgTableBody"></tbody>
+    </table>
+    <p class="modal-foot">공무원수당 등에 관한 규정 별표2 · 현재 근무연수는 <b>초록</b>으로 표시됩니다.</p>
+  </div>
+</dialog>
+
+<dialog id="dlgGa" class="modal" aria-labelledby="dlgGaTitle">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 id="dlgGaTitle">정근수당 가산금 · 연차별 정액</h3>
+      <button class="modal-x" type="button" data-close aria-label="닫기">×</button>
+    </div>
+    <p class="modal-sub">근속이 길수록 커지는 <b>월 정액</b>입니다. (호봉과 무관)</p>
+    <table class="rate-table">
+      <thead><tr><th>근무연수</th><th class="ar">월 가산금</th></tr></thead>
+      <tbody id="gaTableBody"></tbody>
+    </table>
+    <p class="modal-foot">공무원수당 등에 관한 규정 별표2 · 20년 이상은 추가가산금 포함 · 현재 구간은 <b>초록</b> 표시.</p>
+  </div>
+</dialog>
 
 <script src="data/salary-2026.js"></script>
 <script src="data/allowance-rules.js"></script>

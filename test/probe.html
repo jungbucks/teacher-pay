@@ -56,6 +56,20 @@ function run() {
     log('정근 마커 1·7월(2개)', $$('#timeline .tl-dot.jg').length === 2);
     log('명절 마커 설·추석(2개)', $$('#timeline .tl-dot.hol').length === 2);
     log('금액 tabular-nums 적용', getComputedStyle($('#annual')).fontVariantNumeric.includes('tabular-nums'));
+    // 연차별 모달 + 서명 스탬프
+    const dlgJg = $('#dlgJg'), dlgGa = $('#dlgGa');
+    log('정근/가산 행 버튼화', !!$('#jgBtn') && $('#jgBtn').tagName === 'BUTTON' && !!$('#gaBtn') && $('#gaBtn').tagName === 'BUTTON');
+    log('연차별 모달 2종 존재', !!dlgJg && !!dlgGa);
+    $('#jgBtn').click();
+    log('정근 모달 열림·11행', dlgJg.open === true && $$('#jgTableBody tr').length === 11);
+    log('정근 모달 현재행 1개 하이라이트', $$('#jgTableBody tr.cur').length === 1);
+    dlgJg.close();
+    $('#gaBtn').click();
+    log('가산 모달 열림·6구간', dlgGa.open === true && $$('#gaTableBody tr').length === 6);
+    log('가산 모달 현재행 1개 하이라이트', $$('#gaTableBody tr.cur').length === 1);
+    log('가산 25년↑ = 130,000', num($$('#gaTableBody tr')[5].querySelector('.amt').firstChild.textContent) === 130000);
+    dlgGa.close();
+    log('@jungbucks 스탬프 존재', !!$('.stamp') && $('.stamp').textContent.includes('@jungbucks'));
   } catch (e) { log('예외: ' + e.message, false); }
   const fails = [...out.querySelectorAll('li')].filter(li => li.textContent.startsWith('FAIL')).length;
   document.title = `PROBE ${out.querySelectorAll('li').length}건 — FAIL ${fails}`;
