@@ -17,9 +17,9 @@ function run() {
     // 호봉 40으로 변경 → 즉시 갱신
     const hb = $('#hobong'); hb.value = 40; hb.dispatchEvent(new w.Event('input'));
     log('호봉 40 즉시 반영 6,205,700', num($('#salaryVal').textContent) === 6205700 && $('#hobongVal').textContent === '40');
-    // 근무연수 4년 → 가산금 0, 지급률 20%
+    // 근무연수 4년 → 가산금 30,000(법개정: 5년미만도 지급), 지급률 20%
     const yr = $('#years'); yr.value = 4; yr.dispatchEvent(new w.Event('input'));
-    log('근무 4년 → 가산금 0', num($('#gasan').textContent) === 0);
+    log('근무 4년 → 가산금 30,000', num($('#gasan').textContent) === 30000);
     log('근무 4년 → 정근수당 20%', $('#rateTag').textContent === '20%');
     // 근무연수 10년 → 지급률 50%, 가산금 60,000
     yr.value = 10; yr.dispatchEvent(new w.Event('input'));
