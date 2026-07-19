@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 const src = read('data/salary-2026.js') + '\n' + read('data/allowance-rules.js') + '\n' + read('js/calc.js');
-const ctx = vm.runInNewContext(src + ';({SALARY_2026,HOBONG_MIN,HOBONG_MAX,jeonggeunRate,gasangeum,HOLIDAY_RATE,RULES_VERIFIED,computeAll,salaryOf})', {});
+const ctx = vm.runInNewContext(src + ';({SALARY_2026,HOBONG_MIN,HOBONG_MAX,jeonggeunRate,gasangeum,HOLIDAY_RATE,RULES_VERIFIED,computeAll,salaryOf,hobongAtMonth,computeYear})', {});
 
 let fail = 0;
 const check = (name, ok) => { console.log((ok ? 'PASS' : 'FAIL') + ' ' + name); if (!ok) fail++; };
@@ -46,6 +46,28 @@ const r = ctx.computeAll(20, 10);
 check('computeAll 20호봉 salary=3,481,000', r.salary === 3481000);
 check('computeAll 연합계 = 정근×2+가산×12+명절×2',
   r.annual === r.jeonggeun * 2 + ctx.gasangeum(10) * 12 + r.holiday * 2);
+
+// ── 호봉 승급월 반영 (hobongAtMonth) ──
+// 사용자 예시: 오늘 7월·20호봉·8월 승급 → 1·7월=20호봉, 9월(추석)=21호봉
+check('승급 hobongAtMonth 8월승급 오늘7월: 1월=20', ctx.hobongAtMonth(1, 20, 8, 7) === 20);
+check('승급 hobongAtMonth 8월승급 오늘7월: 7월=20', ctx.hobongAtMonth(7, 20, 8, 7) === 20);
+check('승급 hobongAtMonth 8월승급 오늘7월: 9월=21', ctx.hobongAtMonth(9, 20, 8, 7) === 21);
+// 3월 승급, 오늘 7월(이미 승급 지남): 승급 전(1·2월)=19, 승급 후=20
+check('승급 hobongAtMonth 3월승급 오늘7월: 1월=19', ctx.hobongAtMonth(1, 20, 3, 7) === 19);
+check('승급 hobongAtMonth 3월승급 오늘7월: 9월=20', ctx.hobongAtMonth(9, 20, 3, 7) === 20);
+check('승급 미반영(null)이면 호봉 불변', ctx.hobongAtMonth(1, 20, null, 7) === 20);
+
+// ── computeYear ──
+const y0 = ctx.computeYear(20, 10, null, 7);  // 승급 미반영 → computeAll과 동일 연합
+check('computeYear 미반영 = 정근×2+가산×12+명절×2', y0.annual === 8378200 && !y0.jgSplit && !y0.holSplit);
+const y8 = ctx.computeYear(20, 10, 8, 7);      // 8월 승급: 추석만 21호봉으로 갈림
+check('computeYear 8월승급: 명절만 분할', y8.jgSplit === false && y8.holSplit === true);
+check('computeYear 8월승급 추석=21호봉', y8.holiday[1].hobong === 21 && y8.holiday[1].amt === Math.round(3600700 * 0.6));
+check('computeYear 8월승급 연합계 = 8,450,020', y8.annual === 8450020);
+const y3 = ctx.computeYear(20, 10, 3, 7);      // 3월 승급(오늘7월): 1·2월=19, 이후=20 → 정근·명절 둘 다 분할
+check('computeYear 3월승급: 정근·명절 분할', y3.jgSplit === true && y3.holSplit === true);
+check('computeYear 3월승급 1월 정근 = 19호봉분', y3.jeonggeun[0].hobong === 19 && y3.jeonggeun[0].amt === Math.round(3361200 * 0.5));
+check('computeYear 3월승급 연합계 = 8,246,420', y3.annual === 8246420);
 
 console.log(fail === 0 ? '== 전체 PASS ==' : `== FAIL ${fail}건 ==`);
 process.exit(fail === 0 ? 0 : 1);

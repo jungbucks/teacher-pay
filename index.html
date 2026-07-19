@@ -47,6 +47,22 @@
       <input type="range" id="hobong" min="1" max="40" value="20" step="1" aria-label="호봉 슬라이더">
       <p class="field-foot">이 호봉의 월봉급액 <b class="salary num" id="salaryVal">3,481,000</b>원</p>
     </div>
+
+    <div class="field">
+      <div class="field-top">
+        <label for="promo">호봉 승급월</label>
+        <select id="promo" class="promo-select" aria-label="호봉 승급월">
+          <option value="0">없음</option>
+          <option value="1">1월</option><option value="2">2월</option>
+          <option value="3" selected>3월</option><option value="4">4월</option>
+          <option value="5">5월</option><option value="6">6월</option>
+          <option value="7">7월</option><option value="8">8월</option>
+          <option value="9">9월</option><option value="10">10월</option>
+          <option value="11">11월</option><option value="12">12월</option>
+        </select>
+      </div>
+      <p class="field-foot">호봉이 오르는 달. 오늘(<b id="todayLabel">—</b>) 기준으로 승급 전후 지급분을 각 호봉으로 나눠 계산합니다. <span class="muted">보통 3월.</span></p>
+    </div>
   </section>
 
   <!-- 결과 카드 -->
@@ -56,9 +72,9 @@
     <div class="rows">
       <button class="row row-btn" id="jgBtn" type="button" aria-haspopup="dialog">
         <span class="row-name">정근수당 <i class="rate" id="rateTag">50%</i><span class="row-more">연차별 ▸</span></span>
-        <span class="row-amt"><b class="num" id="jeonggeun">1,740,500</b><span class="won">원</span></span>
+        <span class="row-amt" id="jgAmt"><b class="num" id="jeonggeun">1,740,500</b><span class="won">원</span></span>
       </button>
-      <p class="li-note">월봉급액 × 지급률 · <b>1월·7월</b> 각각 지급</p>
+      <p class="li-note" id="jgNote">월봉급액 × 지급률 · <b>1월·7월</b> 각각 지급</p>
 
       <button class="row row-btn" id="gaBtn" type="button" aria-haspopup="dialog">
         <span class="row-name">정근수당 가산금<span class="row-more">연차별 ▸</span></span>
@@ -68,13 +84,13 @@
 
       <div class="row">
         <span class="row-name">명절휴가비</span>
-        <span class="row-amt"><b class="num" id="holiday">2,088,600</b><span class="won">원</span></span>
+        <span class="row-amt" id="holAmt"><b class="num" id="holiday">2,088,600</b><span class="won">원</span></span>
       </div>
-      <p class="li-note">월봉급액 × 60% · <b>설·추석</b> 각각 지급</p>
+      <p class="li-note" id="holNote">월봉급액 × 60% · <b>설·추석</b> 각각 지급</p>
     </div>
 
     <div class="annual">
-      <span class="annual-name">연간 합계<small>정근수당 ×2 + 가산금 ×12 + 명절휴가비 ×2</small></span>
+      <span class="annual-name">연간 합계<small id="annualFormula">정근수당 + 가산금 ×12 + 명절휴가비</small></span>
       <span class="annual-amt"><b class="num" id="annual">8,378,200</b><span class="won">원</span></span>
     </div>
     <div class="stamp-wrap"><span class="stamp" aria-label="제작 @jungbucks">@jungbucks</span></div>

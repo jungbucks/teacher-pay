@@ -12,9 +12,12 @@ function run() {
   const $ = s => d.querySelector(s);
   const $$ = s => [...d.querySelectorAll(s)];
   try {
+    w.__todayMonth = 7;                                                   // 날짜 주입(결정적 검증)
+    const pr = $('#promo'); const setPromo = v => { pr.value = String(v); pr.dispatchEvent(new w.Event('change')); };
+    setPromo(0);                                                          // 레거시 검증은 승급 미반영 기준
     log('초기 20호봉 월봉급 3,481,000', num($('#salaryVal').textContent) === 3481000);
-    log('정근수당 카드 존재', !!$('#jeonggeun'));
-    log('명절휴가비 = 봉급×60%', num($('#holiday').textContent) === Math.round(3481000 * 0.6));
+    log('정근수당 카드 존재', !!$('#jgAmt'));
+    log('명절휴가비 = 봉급×60%', num($('#holAmt').textContent) === Math.round(3481000 * 0.6));
     // 호봉 40으로 변경 → 즉시 갱신
     const hb = $('#hobong'); hb.value = 40; hb.dispatchEvent(new w.Event('input'));
     log('호봉 40 즉시 반영 6,205,700', num($('#salaryVal').textContent) === 6205700 && $('#hobongVal').textContent === '40');
@@ -26,9 +29,9 @@ function run() {
     yr.value = 10; yr.dispatchEvent(new w.Event('input'));
     log('근무 10년 → 지급률 50%', $('#rateTag').textContent === '50%');
     log('근무 10년 → 가산금 60,000', num($('#gasan').textContent) === 60000);
-    // 연간 합계 = 정근×2 + 가산×12 + 명절×2
-    const jg = num($('#jeonggeun').textContent), ga = num($('#gasan').textContent), ho = num($('#holiday').textContent);
-    log('연간 합계 산식 일치', num($('#annual').textContent) === jg * 2 + ga * 12 + ho * 2);
+    // 연간 합계 = 정근×2 + 가산×12 + 명절×2 (승급 미반영)
+    const jg = num($('#jgAmt').textContent), ga = num($('#gasan').textContent), ho = num($('#holAmt').textContent);
+    log('연간 합계 산식 일치(미반영)', num($('#annual').textContent) === jg * 2 + ga * 12 + ho * 2);
     // + 스텝 버튼
     $('#hbPlus').click();
     log('스텝 버튼 상한 40 유지', $('#hobongVal').textContent === '40');
@@ -70,6 +73,20 @@ function run() {
     log('가산 25년↑ = 130,000', num($$('#gaTableBody tr')[5].querySelector('.amt').firstChild.textContent) === 130000);
     dlgGa.close();
     log('@jungbucks 스탬프 존재', !!$('.stamp') && $('.stamp').textContent.includes('@jungbucks'));
+    // ── 호봉 승급월 반영 (오늘 7월 주입) ──
+    hb.value = 20; hb.dispatchEvent(new w.Event('input'));
+    yr.value = 10; yr.dispatchEvent(new w.Event('input'));
+    setPromo(8);   // 8월 승급: 정근(1·7월) 20호봉 동일→비분할 / 추석 21호봉→명절 분할
+    log('오늘월 라벨 7월', $('#todayLabel').textContent === '7월');
+    log('8월승급: 정근 비분할', !$('#jgAmt').classList.contains('split'));
+    log('8월승급: 명절 분할 2줄', $('#holAmt').classList.contains('split') && $$('#holAmt .pay').length === 2);
+    log('8월승급: 추석 21호봉 표기', $('#holAmt').textContent.includes('21호봉'));
+    log('8월승급: 연간 8,450,020', num($('#annual').textContent) === 8450020);
+    log('타임라인 승급월(8월) 표시', $$('#timeline .tl-cell')[7].classList.contains('promo'));
+    setPromo(3);   // 3월 승급(오늘 7월): 1·2월 19호봉 → 정근·명절 모두 분할
+    log('3월승급: 정근 분할', $('#jgAmt').classList.contains('split'));
+    log('3월승급: 연간 8,246,420', num($('#annual').textContent) === 8246420);
+    setPromo(0);
   } catch (e) { log('예외: ' + e.message, false); }
   const fails = [...out.querySelectorAll('li')].filter(li => li.textContent.startsWith('FAIL')).length;
   document.title = `PROBE ${out.querySelectorAll('li').length}건 — FAIL ${fails}`;
