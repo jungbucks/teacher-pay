@@ -25,6 +25,7 @@ const el = {
 };
 
 const YR_MIN = 0, YR_MAX = 45;
+let curCell = null;   // 현재 하이라이트된 호봉표 셀 — 40칸 순회 대신 이전 것만 끄고 새 것만 켠다
 
 function tick(node, text) {
   if (node.textContent === text) return;
@@ -52,7 +53,12 @@ function render() {
   tick(el.holiday, won(r.holiday));
   tick(el.annual, won(r.annual));
   el.gasanFlag.hidden = RULES_VERIFIED;
-  el.hobongTable.querySelectorAll('.hb-cell').forEach(c => c.classList.toggle('cur', +c.dataset.h === hobong));
+  const cell = el.hobongTable.children[hobong - HOBONG_MIN];  // 셀은 1~40 순서 → O(1) 접근
+  if (cell !== curCell) {
+    if (curCell) curCell.classList.remove('cur');
+    if (cell) cell.classList.add('cur');
+    curCell = cell;
+  }
 }
 
 function setHobong(v) { el.hobong.value = Math.min(HOBONG_MAX, Math.max(HOBONG_MIN, v)); render(); }
