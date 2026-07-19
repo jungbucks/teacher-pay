@@ -10,6 +10,7 @@ function run() {
   const d = document.getElementById('f').contentDocument;
   const w = document.getElementById('f').contentWindow;
   const $ = s => d.querySelector(s);
+  const $$ = s => [...d.querySelectorAll(s)];
   try {
     log('초기 20호봉 월봉급 3,481,000', num($('#salaryVal').textContent) === 3481000);
     log('정근수당 카드 존재', !!$('#jeonggeun'));
@@ -35,6 +36,17 @@ function run() {
     log('참고용 고지 존재', d.body.textContent.includes('참고용') && d.body.textContent.includes('인사혁신처'));
     const fs = parseFloat(getComputedStyle($('.li-note')).fontSize);
     log('설명 글자 ≥13px', fs >= 13);
+    // 신규: 호봉표·복사·PNG
+    log('호봉표 40행', $$('.hb-cell').length === 40);
+    // 현재 호봉(스텝으로 40) 하이라이트
+    log('현재 호봉 하이라이트', $$('.hb-cell.cur').length === 1 && +$('.hb-cell.cur').dataset.h === 40);
+    // 호봉표 클릭 → 그 호봉으로 이동
+    $$('.hb-cell').find(c => +c.dataset.h === 15).click();
+    log('호봉표 클릭 → 15호봉·월봉급 2,889,700', $('#hobongVal').textContent === '15' && num($('#salaryVal').textContent) === 2889700);
+    log('복사·PNG 버튼 존재', !!$('#copyBtn') && !!$('#pngBtn'));
+    // PNG 그리기(다운로드는 생략)가 예외 없이 canvas 생성하는지
+    let pngOk = false; try { const cv = w.drawSlip().cv; pngOk = cv && cv.width > 0 && cv.getContext('2d') != null; } catch (e) { pngOk = 'ERR:' + e.message; }
+    log('명세서 canvas 생성', pngOk === true);
   } catch (e) { log('예외: ' + e.message, false); }
   const fails = [...out.querySelectorAll('li')].filter(li => li.textContent.startsWith('FAIL')).length;
   document.title = `PROBE ${out.querySelectorAll('li').length}건 — FAIL ${fails}`;

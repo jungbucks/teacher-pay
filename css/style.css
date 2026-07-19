@@ -82,6 +82,32 @@ input[type="range"] { width: 100%; accent-color: var(--deep); margin: 0.2rem 0 0
 .tick { animation: tick 0.35s ease; }
 @keyframes tick { 0% { color: var(--seal); transform: translateY(-2px); } 100% { } }
 
+/* 도구: 복사·PNG·호봉표 */
+.tools { max-width: 62rem; margin: 1.4rem auto 0; padding: 0 1.25rem; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; }
+.act { border: 1px solid var(--rule-strong); background: #fff; color: var(--ink); font: inherit; font-weight: 700;
+  border-radius: 999px; padding: 0.55rem 1.1rem; cursor: pointer; }
+.act:hover { background: var(--bar); border-color: var(--deep); }
+.act-msg { color: var(--money); font-weight: 700; font-size: 0.9rem; }
+
+.hobong-table { margin-top: 1rem; background: #fff; border: 1px solid var(--rule); border-radius: 10px; }
+.hobong-table > summary { cursor: pointer; font-weight: 800; padding: 0.9rem 1.1rem; list-style: none; }
+.hobong-table > summary::-webkit-details-marker { display: none; }
+.hobong-table > summary::before { content: "▸ "; color: var(--deep); }
+.hobong-table[open] > summary::before { content: "▾ "; }
+.cur-hint { font-weight: 600; color: var(--dim); font-size: 0.82rem; }
+.hb-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.3rem; padding: 0 1rem 0.6rem; }
+@media (min-width: 620px) { .hb-grid { grid-template-columns: repeat(4, 1fr); } }
+.hb-cell { display: flex; align-items: baseline; justify-content: space-between; gap: 0.4rem;
+  border: 1px solid var(--rule); background: var(--field); border-radius: 7px; padding: 0.4rem 0.6rem;
+  font: inherit; cursor: pointer; text-align: left; }
+.hb-cell span { font-weight: 700; font-size: 0.88rem; color: var(--ink-soft); white-space: nowrap; }
+.hb-cell b { font-family: var(--mono); font-size: 0.9rem; color: var(--money); }
+.hb-cell:hover { border-color: var(--deep); }
+.hb-cell.cur { background: var(--deep); border-color: var(--deep); }
+.hb-cell.cur span, .hb-cell.cur b { color: #eef4ee; }
+.hb-src { padding: 0 1.1rem 1rem; font-size: 0.82rem; color: var(--dim); }
+
 /* 용어 설명 */
 .explainer { max-width: 62rem; margin: 1.8rem auto 0; padding: 0 1.25rem; }
 .explainer h2 { font-size: 1.15rem; font-weight: 900; margin-bottom: 0.9rem; }
