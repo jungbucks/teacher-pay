@@ -31,7 +31,7 @@ function run() {
     // + 스텝 버튼
     $('#hbPlus').click();
     log('스텝 버튼 상한 40 유지', $('#hobongVal').textContent === '40');
-    log('가산금 검수 플래그 노출', !$('#gasanFlag').hidden);
+    log('검수 완료 → 플래그 숨김', $('#gasanFlag').hidden);
     log('참고용 고지 존재', d.body.textContent.includes('참고용') && d.body.textContent.includes('인사혁신처'));
     const fs = parseFloat(getComputedStyle($('.li-note')).fontSize);
     log('설명 글자 ≥13px', fs >= 13);

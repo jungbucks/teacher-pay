@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 const src = read('data/salary-2026.js') + '\n' + read('data/allowance-rules.js') + '\n' + read('js/calc.js');
-const ctx = vm.runInNewContext(src + ';({SALARY_2026,HOBONG_MIN,HOBONG_MAX,jeonggeunRate,gasangeum,HOLIDAY_RATE,computeAll,salaryOf})', {});
+const ctx = vm.runInNewContext(src + ';({SALARY_2026,HOBONG_MIN,HOBONG_MAX,jeonggeunRate,gasangeum,HOLIDAY_RATE,RULES_VERIFIED,computeAll,salaryOf})', {});
 
 let fail = 0;
 const check = (name, ok) => { console.log((ok ? 'PASS' : 'FAIL') + ' ' + name); if (!ok) fail++; };
@@ -29,7 +29,9 @@ check('가산금 4년(5년미만) = 30,000', ctx.gasangeum(4) === 30000);
 check('가산금 5년 = 50,000', ctx.gasangeum(5) === 50000);
 check('가산금 10년 = 60,000', ctx.gasangeum(10) === 60000);
 check('가산금 15년 = 80,000', ctx.gasangeum(15) === 80000);
-check('가산금 20년이상 = 100,000', ctx.gasangeum(20) === 100000 && ctx.gasangeum(30) === 100000);
+check('가산금 20~25년 = 110,000(100k+추가10k)', ctx.gasangeum(20) === 110000 && ctx.gasangeum(24) === 110000);
+check('가산금 25년이상 = 130,000(100k+추가30k)', ctx.gasangeum(25) === 130000 && ctx.gasangeum(30) === 130000);
+check('규정 검수 게이트 열림(RULES_VERIFIED=true)', ctx.RULES_VERIFIED === true);
 
 // 명절휴가비율
 check('명절휴가비율 60%', ctx.HOLIDAY_RATE === 0.60);
