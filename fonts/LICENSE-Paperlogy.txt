@@ -1,0 +1,11 @@
+Paperlogy (페이퍼로지)
+SIL Open Font License 1.1 (OFL-1.1) — 상업용 무료, 재배포 허용.
+
+이 폴더의 Paperlogy-*.woff2 글꼴은 SIL OFL 1.1에 따라 배포됩니다.
+글꼴 단독 판매만 금지되며, 임베드·재배포·수정이 허용됩니다.
+
+출처(글꼴 파일): https://github.com/fonts-archive/Paperlogy
+글꼴 소개/원배포: https://noonnu.cc/font_page/1456
+OFL 1.1 전문: https://openfontlicense.org  (구 https://scripts.sil.org/OFL)
+
+이 프로젝트는 위 글꼴을 웹 표시 목적으로만 임베드하며, 글꼴 자체를 판매하지 않습니다.

@@ -5,102 +5,102 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>교사 수당 계산기 — 호봉만 고르면 정근수당·명절휴가비 바로</title>
 <meta name="description" content="근무연수와 호봉만 넣으면 정근수당·정근수당 가산금·명절휴가비가 즉시 계산됩니다. 2026년 교원 봉급표 기준.">
-<meta name="theme-color" content="#17553b">
+<meta name="theme-color" content="#f5f6f5">
 <meta property="og:title" content="교사 수당 계산기">
-<meta property="og:description" content="근무연수·호봉만 고르면 정근수당·명절휴가비가 급여명세서로 바로 나옵니다. 2026년 기준.">
+<meta property="og:description" content="근무연수·호봉만 고르면 정근수당·명절휴가비가 바로 나옵니다. 2026년 기준.">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<header class="masthead">
-  <div class="mh-inner">
-    <p class="kicker">2026년 교원 봉급표 기준 · 참고용</p>
-    <h1>근무연수와 호봉,<br>둘만 넣으면 끝.</h1>
-    <p class="mh-sub">정근수당 · 정근수당 가산금 · 명절휴가비를 한 장의 명세서로 바로 계산합니다.</p>
-  </div>
+<header class="topbar">
+  <p class="brandmark"><span class="dot" aria-hidden="true"></span> 2026 교원 봉급표 기준 · 참고용</p>
+  <h1 class="hero">근무연수와 호봉, 둘만.</h1>
+  <p class="hero-sub">정근수당 · 정근수당 가산금 · 명절휴가비를 한눈에 계산합니다.</p>
 </header>
 
-<main class="sheet-grid">
-  <!-- 입력 전표 -->
-  <section class="inputslip" aria-label="입력">
-    <p class="slip-head">계 산 조 건</p>
+<main class="grid">
+  <!-- 입력 카드 -->
+  <section class="card inputs" aria-label="계산 조건">
+    <p class="card-head">계산 조건</p>
 
     <div class="field">
       <div class="field-top">
-        <label for="years">근무연수 <span class="unit">만 년</span></label>
+        <label for="years">근무연수<span class="unit">만 년</span></label>
         <div class="stepbox">
-          <button class="step" id="yrMinus" aria-label="근무연수 낮추기">–</button>
+          <button class="step" id="yrMinus" type="button" aria-label="근무연수 낮추기">–</button>
           <output class="bignum" id="yearsVal">10</output>
-          <button class="step" id="yrPlus" aria-label="근무연수 올리기">+</button>
+          <button class="step" id="yrPlus" type="button" aria-label="근무연수 올리기">+</button>
         </div>
       </div>
       <input type="range" id="years" min="0" max="45" value="10" step="1" aria-label="근무연수 슬라이더">
       <p class="field-foot">정근수당 지급률·가산금이 근무연수로 정해집니다. <span class="muted">군경력 산입 등 예외는 산정 규정을 확인하세요.</span></p>
     </div>
 
-    <div class="field-rule"></div>
-
     <div class="field">
       <div class="field-top">
         <label for="hobong">호봉</label>
         <div class="stepbox">
-          <button class="step" id="hbMinus" aria-label="호봉 낮추기">–</button>
+          <button class="step" id="hbMinus" type="button" aria-label="호봉 낮추기">–</button>
           <output class="bignum" id="hobongVal">20</output>
-          <button class="step" id="hbPlus" aria-label="호봉 올리기">+</button>
+          <button class="step" id="hbPlus" type="button" aria-label="호봉 올리기">+</button>
         </div>
       </div>
       <input type="range" id="hobong" min="1" max="40" value="20" step="1" aria-label="호봉 슬라이더">
-      <p class="field-foot">이 호봉의 월봉급액 <b id="salaryVal">3,481,000</b>원</p>
+      <p class="field-foot">이 호봉의 월봉급액 <b class="salary num" id="salaryVal">3,481,000</b>원</p>
     </div>
   </section>
 
-  <!-- 급여대장 명세서 -->
-  <section class="payslip" aria-label="계산 결과" aria-live="polite">
-    <div class="perf" aria-hidden="true"></div>
-    <div class="slip-body">
-      <div class="slip-band">
-        <span class="sb-title">급여 참고 명세서</span>
-        <span class="sb-tag">2026 · 세전</span>
-      </div>
+  <!-- 결과 카드 -->
+  <section class="card result" aria-label="계산 결과" aria-live="polite">
+    <p class="card-head">급여 명세 <span class="chip">2026 · 세전</span></p>
 
-      <div class="line">
-        <span class="li-name">정근수당 <i id="rateTag">50%</i></span>
-        <span class="li-amt"><b id="jeonggeun">1,740,500</b>원</span>
+    <div class="rows">
+      <div class="row">
+        <span class="row-name">정근수당 <i class="rate" id="rateTag">50%</i></span>
+        <span class="row-amt"><b class="num" id="jeonggeun">1,740,500</b><span class="won">원</span></span>
       </div>
       <p class="li-note">월봉급액 × 지급률 · <b>1월·7월</b> 각각 지급</p>
 
-      <div class="line">
-        <span class="li-name">정근수당 가산금</span>
-        <span class="li-amt"><b id="gasan">60,000</b><span class="per">원/월</span></span>
+      <div class="row">
+        <span class="row-name">정근수당 가산금</span>
+        <span class="row-amt"><b class="num" id="gasan">60,000</b><span class="per">원/월</span></span>
       </div>
-      <p class="li-note">근무연수 구간별 정액 · <b>매월</b> 지급 → 연 <b id="gasanYear">720,000</b>원 <i class="flag" id="gasanFlag">검수 예정</i></p>
+      <p class="li-note">근무연수 구간별 정액 · <b>매월</b> 지급 → 연 <b class="yr num" id="gasanYear">720,000</b>원 <i class="flag" id="gasanFlag" hidden>검수 예정</i></p>
 
-      <div class="line">
-        <span class="li-name">명절휴가비</span>
-        <span class="li-amt"><b id="holiday">2,088,600</b>원</span>
+      <div class="row">
+        <span class="row-name">명절휴가비</span>
+        <span class="row-amt"><b class="num" id="holiday">2,088,600</b><span class="won">원</span></span>
       </div>
       <p class="li-note">월봉급액 × 60% · <b>설·추석</b> 각각 지급</p>
-
-      <div class="rule double"></div>
-      <div class="line total">
-        <span class="li-name">연간 합계</span>
-        <span class="li-amt"><b id="annual">8,378,200</b>원</span>
-      </div>
-      <p class="li-note">정근수당 ×2 + 가산금 ×12 + 명절휴가비 ×2</p>
-
-      <div class="seal" aria-hidden="true">참<br>고</div>
     </div>
-    <div class="perf" aria-hidden="true"></div>
+
+    <div class="annual">
+      <span class="annual-name">연간 합계<small>정근수당 ×2 + 가산금 ×12 + 명절휴가비 ×2</small></span>
+      <span class="annual-amt"><b class="num" id="annual">8,378,200</b><span class="won">원</span></span>
+    </div>
+
+    <!-- 시그니처: 월별 수당 지급 타임라인 -->
+    <div class="timeline" aria-label="월별 수당 지급 시점">
+      <p class="tl-title">언제 들어오나 — 1년 지급 시점</p>
+      <div class="tl-track" id="timeline"></div>
+      <div class="tl-legend" aria-hidden="true">
+        <span><i class="lg jg"></i> 정근수당(1·7월)</span>
+        <span><i class="lg hol"></i> 명절휴가비(설·추석)</span>
+        <span><i class="lg ga"></i> 가산금(매월)</span>
+      </div>
+      <p class="tl-foot">설·추석은 음력이라 해마다 달라져 대표 월(2월·9월)로 표시한 근사입니다.</p>
+    </div>
   </section>
 </main>
 
-<section class="tools" aria-label="내보내기·호봉표">
-  <div class="actions">
-    <button class="act" id="copyBtn">📋 결과 복사</button>
-    <button class="act" id="pngBtn">🖼️ 명세서 이미지로 저장</button>
-    <span class="act-msg" id="actMsg" role="status" aria-live="polite"></span>
-  </div>
+<div class="actionbar">
+  <button class="btn btn-primary" id="pngBtn" type="button">명세서 이미지로 저장</button>
+  <button class="btn" id="copyBtn" type="button">결과 복사</button>
+  <span class="act-msg" id="actMsg" role="status" aria-live="polite"></span>
+</div>
+
+<section class="tools" aria-label="전체 호봉표">
   <details class="hobong-table">
-    <summary>📖 2026 전체 호봉표 펼쳐보기 <span class="cur-hint">(현재 호봉은 초록으로 표시)</span></summary>
+    <summary>2026 전체 호봉표 펼쳐보기 <span class="cur-hint">(현재 호봉은 초록으로 표시)</span></summary>
     <div id="hobongTable" class="hb-grid"></div>
     <p class="hb-src">인사혁신처 2026 공무원봉급표(유·초·중·고 교원 공통) · 세전 월봉급액</p>
   </details>
@@ -126,7 +126,7 @@
 
 <footer class="colophon">
   <p><b>2026년 교원 봉급표 기준의 참고용 계산기입니다.</b> 개인 상황(중도 임용·감봉·근무연수 산입 예외 등)에 따라 실제 지급액과 다를 수 있습니다.</p>
-  <p class="src">봉급표 출처: 인사혁신처 2026 공무원봉급표 · 수당 규정: 공무원수당 등에 관한 규정(별표2).</p>
+  <p class="src">봉급표 출처: 인사혁신처 2026 공무원봉급표 · 수당 규정: 공무원수당 등에 관한 규정(별표2). 글꼴: Paperlogy(OFL).</p>
 </footer>
 
 <script src="data/salary-2026.js"></script>

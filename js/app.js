@@ -73,6 +73,24 @@ function renderHobongTable() {
   el.hobongTable.innerHTML = html;
 }
 
+/* 시그니처: 월별 수당 지급 타임라인 — 표시 전용(계산과 무관, 정적 구조).
+   정근수당 1·7월 / 명절휴가비 설·추석(대표월 2·9월 근사) / 가산금 매월. */
+function renderTimeline() {
+  const track = document.getElementById('timeline');
+  if (!track) return;
+  const JG = [1, 7];              // 정근수당
+  const HOL = { 2: '설', 9: '추석' }; // 명절휴가비(대표월 근사)
+  let html = '';
+  for (let m = 1; m <= 12; m++) {
+    let dot = '';
+    if (JG.includes(m)) dot = `<i class="tl-dot jg" title="${m}월 정근수당"></i>`;
+    else if (HOL[m]) dot = `<i class="tl-dot hol" title="${HOL[m]} 명절휴가비(대표월)"></i>`;
+    const event = dot ? ' event' : '';
+    html += `<div class="tl-cell${event}"><span class="tl-slot">${dot}</span><span class="tl-seg"></span><span class="tl-mon">${m}</span></div>`;
+  }
+  track.innerHTML = html;
+}
+
 /* 결과 요약 텍스트 */
 function summaryText() {
   const { hobong, years, r } = state();
@@ -103,63 +121,56 @@ function fallbackCopy(text, done) {
   document.body.removeChild(ta); done();
 }
 
-/* 명세서를 canvas에 직접 그려 PNG로 저장 (라이브러리 없음) */
+/* 명세서를 canvas에 직접 그려 PNG로 저장 (라이브러리 없음).
+   화면과 같은 미니멀 톤: 흰 배경 · 얇은 브랜드 액센트 · 초록은 연간 합계에만 · 직인/줄무늬 없음. */
 function drawSlip() {
   const { hobong, years, r } = state();
-  const dpr = 2, W = 640, H = 470;
+  const dpr = 2, W = 640, H = 452;
   const cv = document.createElement('canvas');
   cv.width = W * dpr; cv.height = H * dpr;
   const ctx = cv.getContext('2d');
   ctx.scale(dpr, dpr);
-  const F = (w, s) => `${w} ${s}px "Pretendard","Malgun Gothic",sans-serif`;
-  const M = (w, s) => `${w} ${s}px "Consolas","D2Coding",monospace`;
+  const F = (w, s) => `${w} ${s}px "Pretendard","Malgun Gothic",sans-serif`;      // 본문
+  const P = (w, s) => `${w} ${s}px "Paperlogy","Pretendard","Malgun Gothic",sans-serif`; // 디스플레이·숫자
+  const INK = '#1a1d1b', SOFT = '#5b6560', FAINT = '#8a938d', BRAND = '#17553b', TINT = '#eef4f0';
 
   ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = '#17553b'; ctx.fillRect(0, 0, W, 54);
-  ctx.textBaseline = 'middle'; ctx.fillStyle = '#eef4ee';
-  ctx.font = F(800, 22); ctx.textAlign = 'left'; ctx.fillText('급여 참고 명세서', 28, 28);
-  ctx.font = F(700, 13); ctx.textAlign = 'right'; ctx.fillStyle = '#bfe0cd';
-  ctx.fillText('2026 · 세전 · 참고용', W - 28, 28);
+  ctx.fillStyle = BRAND; ctx.fillRect(0, 0, W, 5);              // 얇은 브랜드 액센트 라인
 
   ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = '#46564b'; ctx.font = F(700, 14); ctx.textAlign = 'left';
-  ctx.fillText(`근무연수 ${years}년 · ${hobong}호봉 (월봉급 ${won(r.salary)}원)`, 28, 84);
+  ctx.fillStyle = INK; ctx.font = P(700, 22); ctx.textAlign = 'left';
+  ctx.fillText('급여 명세', 28, 52);
+  ctx.fillStyle = FAINT; ctx.font = F(600, 13); ctx.textAlign = 'right';
+  ctx.fillText('2026 · 세전 · 참고용', W - 28, 52);
+  ctx.fillStyle = SOFT; ctx.font = F(500, 14); ctx.textAlign = 'left';
+  ctx.fillText(`근무연수 ${years}년 · ${hobong}호봉 (월봉급 ${won(r.salary)}원)`, 28, 80);
 
-  let y = 124;
-  const line = (name, amount, note) => {
-    ctx.fillStyle = '#202a23'; ctx.font = F(700, 18); ctx.textAlign = 'left';
+  let y = 122;
+  const line = (name, amount, unit, note) => {
+    ctx.fillStyle = INK; ctx.font = F(600, 17); ctx.textAlign = 'left';
     ctx.fillText(name, 28, y);
-    ctx.fillStyle = '#1f6b4a'; ctx.font = M(700, 22); ctx.textAlign = 'right';
-    ctx.fillText(won(amount) + '원', W - 28, y);
-    ctx.fillStyle = '#6c7a6f'; ctx.font = F(400, 12.5); ctx.textAlign = 'left';
+    ctx.font = P(700, 22); ctx.textAlign = 'right';
+    const suffix = unit ? '  ' + unit : '';
+    ctx.fillText(won(amount) + suffix, W - 28, y);
+    ctx.fillStyle = FAINT; ctx.font = F(400, 12.5); ctx.textAlign = 'left';
     ctx.fillText(note, 28, y + 20);
-    y += 58;
+    y += 56;
   };
-  line(`정근수당 (${r.jeonggeunRate}%)`, r.jeonggeun, '월봉급액 × 지급률 · 1월·7월 각각 지급');
-  line('정근수당 가산금', r.gasangeum, `근무연수 구간별 정액 · 매월 → 연 ${won(r.gasangeum * 12)}원`);
-  line('명절휴가비', r.holiday, '월봉급액 × 60% · 설·추석 각각 지급');
+  line(`정근수당 (${r.jeonggeunRate}%)`, r.jeonggeun, '원', '월봉급액 × 지급률 · 1월·7월 각각 지급');
+  line('정근수당 가산금', r.gasangeum, '원/월', `근무연수 구간별 정액 · 매월 → 연 ${won(r.gasangeum * 12)}원`);
+  line('명절휴가비', r.holiday, '원', '월봉급액 × 60% · 설·추석 각각 지급');
 
-  ctx.strokeStyle = '#8fa08c'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(28, y - 26); ctx.lineTo(W - 28, y - 26); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(28, y - 22); ctx.lineTo(W - 28, y - 22); ctx.stroke();
+  // 연간 합계 — 초록 tint 블록 (시선 집중)
+  y += 4;
+  ctx.fillStyle = TINT; ctx.fillRect(28, y, W - 56, 60);
+  ctx.fillStyle = BRAND; ctx.font = P(700, 18); ctx.textAlign = 'left';
+  ctx.fillText('연간 합계', 46, y + 32);
+  ctx.fillStyle = SOFT; ctx.font = F(500, 11.5);
+  ctx.fillText('정근수당 ×2 + 가산금 ×12 + 명절휴가비 ×2', 46, y + 48);
+  ctx.fillStyle = BRAND; ctx.font = P(900, 27); ctx.textAlign = 'right';
+  ctx.fillText(won(r.annual) + '원', W - 46, y + 40);
 
-  ctx.fillStyle = '#202a23'; ctx.font = F(900, 20); ctx.textAlign = 'left';
-  ctx.fillText('연간 합계', 28, y + 6);
-  ctx.font = M(700, 26); ctx.textAlign = 'right';
-  ctx.fillText(won(r.annual) + '원', W - 28, y + 8);
-  ctx.fillStyle = '#6c7a6f'; ctx.font = F(400, 12); ctx.textAlign = 'left';
-  ctx.fillText('정근수당 ×2 + 가산금 ×12 + 명절휴가비 ×2', 28, y + 30);
-
-  // 참고 직인
-  ctx.save();
-  ctx.translate(W - 88, H - 92); ctx.rotate(-11 * Math.PI / 180);
-  ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.arc(0, 0, 27, 0, 2 * Math.PI); ctx.stroke();
-  ctx.fillStyle = '#c0392b'; ctx.font = F(900, 15); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('참고', 0, 0);
-  ctx.restore();
-
-  ctx.textBaseline = 'alphabetic'; ctx.fillStyle = '#6c7a6f'; ctx.font = F(400, 11.5); ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic'; ctx.fillStyle = FAINT; ctx.font = F(400, 11.5); ctx.textAlign = 'left';
   ctx.fillText('출처: 인사혁신처 2026 공무원봉급표 · 공무원수당규정(별표2) · 개인 상황에 따라 다를 수 있는 참고용', 28, H - 18);
   return { cv, hobong, years };
 }
@@ -196,4 +207,5 @@ el.copyBtn.addEventListener('click', copyResult);
 el.pngBtn.addEventListener('click', savePng);
 
 renderHobongTable();
+renderTimeline();
 render();
