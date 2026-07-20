@@ -121,8 +121,10 @@ input[type="range"] { width: 100%; accent-color: var(--brand); margin: 0.3rem 0 
   padding: 0.2rem 0.6rem; transform: rotate(-4deg); opacity: 0.82; }
 
 /* 연차별 지급표 모달 */
+/* margin:auto = 화면 중앙 정렬. 26행의 `* { margin: 0 }` 리셋이 브라우저 기본값
+   `dialog:modal { margin: auto }`를 덮어써서 좌측 상단에 붙던 것을 되돌린다. 지우지 말 것. */
 .modal { border: none; padding: 0; background: transparent; width: 100%; max-width: min(92vw, 420px);
-  border-radius: 16px; box-shadow: 0 20px 60px rgba(20, 30, 25, 0.28); color: var(--ink); }
+  margin: auto; border-radius: 16px; box-shadow: 0 20px 60px rgba(20, 30, 25, 0.28); color: var(--ink); }
 .modal::backdrop { background: rgba(26, 29, 27, 0.45); }
 .modal-card { background: var(--surface); border-radius: 16px; padding: 1.4rem 1.4rem 1.2rem; }
 .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.3rem; }
