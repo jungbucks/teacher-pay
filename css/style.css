@@ -1,5 +1,5 @@
 /* 교사 수당 계산기 — 토스/애플식 미니멀 리프레시.
-   무채색 캔버스 + 초록(--brand) 액센트만. 디스플레이·큰 숫자=Paperlogy, 본문=Pretendard.
+   무채색 캔버스 + 초록(--brand) 액센트 + 버터(--butter) 강조 면. 디스플레이·큰 숫자=Paperlogy, 본문=Pretendard.
    설계: docs/superpowers/specs/2026-07-19-teacher-pay-ui-refresh-design.md */
 
 /* Paperlogy (OFL) 셀프호스팅 — 사용 무게만. 파일 부재 시 폴백 스택이 받쳐줌. */
@@ -14,7 +14,9 @@
   --canvas: #f5f6f5; --surface: #ffffff;
   --ink: #1a1d1b; --ink-soft: #5b6560; --ink-faint: #8a938d;
   --line: #ecefec; --field: #f7f8f7;
-  --brand: #17553b; --brand-strong: #0f3f2b; --brand-tint: #eef4f0;
+  --brand: #013e37; --brand-strong: #012c26;
+  /* 버터 — 온기를 주는 강조 면 틴트(초록은 여전히 액센트 전용, 면에 칠하지 않음) */
+  --butter: #ffefb3; --butter-soft: #fff8dd; --butter-deep: #f7d97a;
   --font-display: "Paperlogy", "Pretendard", "Malgun Gothic", system-ui, sans-serif;
   --font-body: "Pretendard", "Malgun Gothic", system-ui, sans-serif;
   --shadow: 0 1px 3px rgba(20, 30, 25, .06), 0 10px 28px rgba(20, 30, 25, .05);
@@ -59,7 +61,7 @@ body { background: var(--canvas); color: var(--ink);
 .step { width: 2.1rem; height: 2.1rem; border: 1px solid var(--line); background: var(--field);
   border-radius: 10px; font: inherit; font-size: 1.25rem; font-weight: 700; color: var(--ink-soft);
   cursor: pointer; line-height: 1; transition: border-color .12s, color .12s, background .12s; }
-.step:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-tint); }
+.step:hover { border-color: var(--brand); color: var(--brand); background: var(--butter-soft); }
 .bignum { min-width: 3rem; text-align: center; font-family: var(--font-display); font-weight: 800;
   font-size: 1.9rem; color: var(--ink); font-variant-numeric: tabular-nums; }
 input[type="range"] { width: 100%; accent-color: var(--brand); margin: 0.3rem 0 0.55rem; height: 1.4rem; }
@@ -73,7 +75,7 @@ input[type="range"] { width: 100%; accent-color: var(--brand); margin: 0.3rem 0 
 .row { display: flex; align-items: baseline; justify-content: space-between; gap: 0.4rem 0.8rem; flex-wrap: wrap; }
 .row-name { font-weight: 600; font-size: 1rem; color: var(--ink); min-width: 0; }
 .row-name .rate { font-family: var(--font-body); font-weight: 700; font-size: 0.8rem; color: var(--brand);
-  background: var(--brand-tint); border-radius: 6px; padding: 0.05rem 0.4rem; margin-left: 0.35rem; }
+  background: var(--butter-soft); border-radius: 6px; padding: 0.05rem 0.4rem; margin-left: 0.35rem; }
 .row-amt { flex: 0 0 auto; margin-left: auto; white-space: nowrap; font-family: var(--font-display); font-weight: 700;
   font-size: 1.4rem; color: var(--ink); font-variant-numeric: tabular-nums; }
 .row-amt .won { font-family: var(--font-body); font-weight: 600; font-size: 0.85rem; color: var(--ink-soft); margin-left: 0.1rem; }
@@ -95,8 +97,8 @@ input[type="range"] { width: 100%; accent-color: var(--brand); margin: 0.3rem 0 
 .flag { color: var(--brand); font-weight: 700; border: 1px solid var(--brand); border-radius: 6px;
   padding: 0 0.35rem; font-size: 0.72rem; margin-left: 0.3rem; }
 
-/* 연간 합계 — 초록 tint 블록, 시선 집중 */
-.annual { margin-top: 0.4rem; padding: 1.1rem 1.2rem; background: var(--brand-tint);
+/* 연간 합계 — 버터 tint 블록, 시선 집중 */
+.annual { margin-top: 0.4rem; padding: 1.1rem 1.2rem; background: var(--butter);
   border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; }
 .annual-name { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; color: var(--brand-strong); }
 .annual-name small { display: block; font-family: var(--font-body); font-weight: 500; font-size: 0.76rem; color: var(--ink-soft); margin-top: 0.15rem; }
@@ -107,7 +109,7 @@ input[type="range"] { width: 100%; accent-color: var(--brand); margin: 0.3rem 0 
 /* 클릭 가능한 수당 행 (→ 연차별 모달) */
 .row-btn { width: 100%; margin: 0 0 0 -0.4rem; padding: 0.2rem 0.4rem; border: none; background: none;
   font: inherit; color: inherit; cursor: pointer; border-radius: 8px; transition: background .12s; }
-.row-btn:hover, .row-btn:focus-visible { background: var(--brand-tint); }
+.row-btn:hover, .row-btn:focus-visible { background: var(--butter-soft); }
 .row-more { font-family: var(--font-body); font-weight: 700; font-size: 0.72rem; color: var(--ink-faint);
   margin-left: 0.5rem; white-space: nowrap; transition: color .12s; }
 .row-btn:hover .row-more, .row-btn:focus-visible .row-more { color: var(--brand); }
@@ -138,7 +140,7 @@ input[type="range"] { width: 100%; accent-color: var(--brand); margin: 0.3rem 0 
 .rate-table td.amt { font-family: var(--font-display); font-weight: 700; font-variant-numeric: tabular-nums; }
 .rate-table td .sub { display: block; font-size: 0.72rem; color: var(--ink-faint); font-weight: 500; }
 .rate-table tr:last-child td { border-bottom: none; }
-.rate-table tr.cur td { background: var(--brand-tint); color: var(--brand-strong); font-weight: 700; }
+.rate-table tr.cur td { background: var(--butter); color: var(--brand-strong); font-weight: 700; }
 .rate-table tr.cur td.amt { color: var(--brand); }
 .rate-table tr.cur td:first-child { border-radius: 8px 0 0 8px; }
 .rate-table tr.cur td:last-child { border-radius: 0 8px 8px 0; }
@@ -156,8 +158,8 @@ input[type="range"] { width: 100%; accent-color: var(--brand); margin: 0.3rem 0 
 .tl-dot { width: 0.62rem; height: 0.62rem; border-radius: 50%; }
 .tl-dot.jg { background: var(--brand); }
 .tl-dot.hol { background: var(--surface); border: 2px solid var(--brand); }
-.tl-seg { width: 100%; height: 4px; border-radius: 2px; background: var(--brand-tint); }
-.tl-cell.event .tl-seg { background: #cfe3d6; }
+.tl-seg { width: 100%; height: 4px; border-radius: 2px; background: var(--butter); }
+.tl-cell.event .tl-seg { background: var(--butter-deep); }
 .tl-mon { font-size: 0.72rem; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
 .tl-hbslot { height: 0.85rem; display: flex; align-items: center; }
 .tl-hb { font-size: 0.66rem; font-weight: 700; color: var(--brand); font-variant-numeric: tabular-nums; }
@@ -168,7 +170,7 @@ input[type="range"] { width: 100%; accent-color: var(--brand); margin: 0.3rem 0 
 .lg { width: 0.6rem; height: 0.6rem; border-radius: 50%; }
 .lg.jg { background: var(--brand); }
 .lg.hol { background: var(--surface); border: 2px solid var(--brand); }
-.lg.ga { border-radius: 2px; height: 4px; width: 1rem; background: var(--brand-tint); }
+.lg.ga { border-radius: 2px; height: 4px; width: 1rem; background: var(--butter); }
 .tl-foot { font-size: 0.76rem; color: var(--ink-faint); margin-top: 0.5rem; line-height: 1.5; }
 
 /* 숫자 갱신 틱 (은은하게) */

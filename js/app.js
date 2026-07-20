@@ -222,7 +222,7 @@ function drawSlip() {
   ctx.scale(dpr, dpr);
   const F = (w, s) => `${w} ${s}px "Pretendard","Malgun Gothic",sans-serif`;      // 본문
   const P = (w, s) => `${w} ${s}px "Paperlogy","Pretendard","Malgun Gothic",sans-serif`; // 디스플레이·숫자
-  const INK = '#1a1d1b', SOFT = '#5b6560', FAINT = '#8a938d', BRAND = '#17553b', TINT = '#eef4f0';
+  const INK = '#1a1d1b', SOFT = '#5b6560', FAINT = '#8a938d', BRAND = '#013e37', TINT = '#ffefb3';
 
   ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = BRAND; ctx.fillRect(0, 0, W, 5);              // 얇은 브랜드 액센트 라인

@@ -2,7 +2,8 @@
 
 > 호봉·근무연수 → 정근수당·정근수당 가산금·명절휴가비 즉시 계산.
 > 설계: 초판 `docs/superpowers/specs/2026-07-18-teacher-pay-design.md` · **UI 리프레시 `docs/superpowers/specs/2026-07-19-teacher-pay-ui-refresh-design.md`(현행)**.
-> **세계관(v2.0~) = 토스/애플식 미니멀.** 무채색 캔버스(--canvas/--surface) + **초록(--brand #17553b)은 액센트로만**(연간 합계·주요 버튼·슬라이더·타임라인 마커·상단 브랜드 점). 금액은 Paperlogy + `tabular-nums`(모노스페이스 은퇴). 시그니처 = 월별 수당 지급 타임라인. **초록을 면(배경·테두리)에 다시 칠하지 말 것.**
+> **세계관(v2.0~) = 토스/애플식 미니멀.** 무채색 캔버스(--canvas/--surface) + **초록(--brand #013e37)은 액센트로만**(주요 버튼·슬라이더·타임라인 마커·상단 브랜드 점·강조 글자). 금액은 Paperlogy + `tabular-nums`(모노스페이스 은퇴). 시그니처 = 월별 수당 지급 타임라인. **초록을 면(배경·테두리)에 다시 칠하지 말 것.**
+> **v2.3~ 강조 면은 버터(웜 옐로)**: `--butter #ffefb3`(연간 합계 블록·활성 행) / `--butter-soft #fff8dd`(hover·요율 배지) / `--butter-deep #f7d97a`(타임라인 지급월 세그먼트). 구 `--brand-tint #eef4f0`·`#cfe3d6`은 **폐기 — 초록 tint를 되살리지 말 것.**
 
 ## 절대 규칙
 
