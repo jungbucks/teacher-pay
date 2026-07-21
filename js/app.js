@@ -212,7 +212,7 @@ function fallbackCopy(text, done) {
 }
 
 /* 명세서를 canvas에 직접 그려 PNG로 저장 (라이브러리 없음).
-   화면과 같은 미니멀 톤: 흰 배경 · 얇은 브랜드 액센트 · 초록은 연간 합계에만 · 직인/줄무늬 없음. */
+   화면과 같은 미니멀 톤: 흰 배경 · 얇은 브랜드 액센트(딥그린) · 강조 면은 버터(연간 합계) · 직인/줄무늬 없음. */
 function drawSlip() {
   const { hobong, years, promoMonth, tm, r } = state();
   const dpr = 2, W = 640, H = 452;
@@ -257,7 +257,7 @@ function drawSlip() {
   line('정근수당 가산금', r.gasan, '원/월', `근무연수 구간별 정액 · 매월 → 연 ${won(r.gasanYear)}원`);
   line('명절휴가비 (연)', r.holSum, '원', holNote);
 
-  // 연간 합계 — 초록 tint 블록 (시선 집중)
+  // 연간 합계 — 버터 tint 블록 (시선 집중)
   y += 4;
   ctx.fillStyle = TINT; ctx.fillRect(28, y, W - 56, 60);
   ctx.fillStyle = BRAND; ctx.font = P(700, 18); ctx.textAlign = 'left';
