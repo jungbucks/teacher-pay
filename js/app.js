@@ -76,6 +76,12 @@ function render() {
   el.salaryVal.textContent = won(salaryOf(hobong));
   el.todayLabel.textContent = tm + '월';
   el.rateTag.textContent = r.rate + '%';
+  el.yrMinus.disabled = years === YR_MIN;
+  el.yrPlus.disabled = years === YR_MAX;
+  el.hbMinus.disabled = hobong === HOBONG_MIN;
+  el.hbPlus.disabled = hobong === HOBONG_MAX;
+  el.years.setAttribute('aria-valuetext', years + '년');
+  el.hobong.setAttribute('aria-valuetext', hobong + '호봉');
 
   renderAmt(el.jgAmt, r.jeonggeun, r.jgSplit, '원', p => p.month + '월');
   el.jgNote.innerHTML = r.jgSplit

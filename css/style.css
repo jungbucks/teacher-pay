@@ -244,3 +244,71 @@ input[type="range"] { width: 100%; accent-color: var(--brand); margin: 0.3rem 0 
   .tl-mon { font-size: 0.66rem; }
   .tl-hb { font-size: 0.6rem; }
 }
+
+/* Responsive usability refresh: clear totals, readable details, touch targets. */
+:root { --ink-faint: #66716b; --wrap: 66rem; --radius: 22px; }
+.topbar { padding-top: 3rem; }
+.hero { font-size: clamp(1.8rem, 4vw, 2.7rem); letter-spacing: -.045em; }
+.hero-sub { max-width: 36rem; line-height: 1.7; }
+.grid { gap: 1.5rem; margin-top: 2rem; }
+.card { padding: 1.75rem; min-width: 0; box-shadow: 0 4px 24px #182c2110; }
+.card-head { font-size: 1rem; }
+.chip { font-size: .8rem; padding: .25rem .6rem; }
+.step { width: 44px; height: 44px; flex-shrink: 0; touch-action: manipulation; }
+.step:disabled { opacity: .35; cursor: default; }
+input[type="range"] { height: 44px; margin: 0; cursor: pointer; }
+.promo-select { min-height: 44px; min-width: 90px; }
+.field-foot, .li-note, .modal-sub, .modal-foot, .hb-src, .colophon, .colophon .src { font-size: .9375rem; }
+.field-foot .muted { display: block; margin-top: .35rem; }
+.field + .field { margin-top: 1.4rem; padding-top: 1.4rem; }
+.annual { flex-direction: column; align-items: flex-start; gap: .8rem; margin: 0 0 1.5rem; padding: 1.5rem; border-radius: 16px; }
+.annual-name small { font-size: .9375rem; line-height: 1.6; margin-top: .45rem; }
+.annual-amt { font-size: clamp(1.8rem, 4vw, 2.5rem); margin-left: 0; }
+.detail-label { font-size: .9375rem; font-weight: 700; color: var(--ink-soft); margin-bottom: 1rem; }
+.row { align-items: center; }
+.row-btn { margin: 0; padding: .5rem 0; min-height: 44px; text-align: left; }
+.row-name { display: flex; align-items: center; flex-wrap: wrap; gap: .3rem; }
+.row-more { margin-left: .2rem; font-size: .8125rem; }
+.row-amt.split { display: flex; width: 100%; margin-top: .4rem; }
+.row-amt.split .pay { width: 100%; flex-wrap: wrap; justify-content: flex-end; gap: .2rem; padding: .35rem 0; }
+.row-amt.split .pay b { font-size: 1.25rem; }
+.pay-tag { order: -1; margin: 0 auto 0 0; font-size: .875rem; font-style: normal; }
+.li-note { margin: .3rem 0 1.2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
+.rows > .li-note:last-child { margin-bottom: 0; border-bottom: 0; }
+.tl-legend { font-size: .875rem; gap: .5rem 1rem; }
+.tl-foot { font-size: .9375rem; }
+.tl-mon { font-size: .8125rem; }
+.tl-hb { font-size: .75rem; }
+.modal { max-height: calc(100dvh - 2rem); overflow-y: auto; overscroll-behavior: contain; }
+.modal-x { min-width: 44px; min-height: 44px; flex-shrink: 0; }
+.hb-cell { min-height: 48px; flex-wrap: wrap; }
+.hb-cell.cur { background: var(--butter); border-color: var(--butter-deep); }
+.hb-cell.cur span, .hb-cell.cur b { color: var(--brand-strong); }
+.cur-hint { display: block; font-size: .9375rem; margin-top: .3rem; }
+.actionbar { margin-top: 1.5rem; }
+.btn { min-height: 48px; border-radius: 14px; }
+@media (min-width: 860px) { .grid { grid-template-columns: 23rem minmax(0, 1fr); align-items: start; } .inputs { position: sticky; top: 1.5rem; } }
+@media (max-width: 520px) {
+  .topbar { padding: 1.5rem 1rem 0; }
+  .hero-sub { font-size: .9375rem; }
+  .grid { padding: 0 1rem; margin-top: 1.25rem; gap: 1rem; }
+  .card { padding: 1.15rem; border-radius: 18px; }
+  .field-top { flex-wrap: wrap; }
+  .field-top label { font-size: 1rem; }
+  .field-top .unit { font-size: .8125rem; }
+  .bignum { min-width: 2.2rem; font-size: 1.65rem; }
+  .stepbox { gap: .2rem; }
+  .annual { padding: 1.1rem; }
+  .annual-amt { margin-left: 0; }
+  .actionbar { padding: 0 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+  .actionbar .btn { padding: .75rem .5rem; font-size: .9375rem; }
+  .act-msg { grid-column: 1 / -1; }
+  .tools, .explainer { padding: 0 1rem; }
+  .hb-grid { padding: 0 .75rem .75rem; }
+  .hb-cell { padding: .6rem; }
+  .hb-cell b { font-size: .85rem; }
+  .tl-track { gap: 3px; }
+  .modal-card { padding: 1rem; }
+  .modal-head { gap: .3rem; }
+  .modal-head h3 { font-size: 1rem; }
+}

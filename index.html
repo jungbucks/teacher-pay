@@ -13,14 +13,14 @@
 <body>
 <header class="topbar">
   <p class="brandmark"><span class="dot" aria-hidden="true"></span> 2026 교원 봉급표 기준 · 참고용</p>
-  <h1 class="hero">근무연수와 호봉, 둘만.</h1>
-  <p class="hero-sub">정근수당 · 정근수당 가산금 · 명절휴가비를 한눈에 계산합니다.</p>
+  <h1 class="hero">올해 받을 수당, 한눈에.</h1>
+  <p class="hero-sub">근무연수와 현재 호봉을 선택하면, 수당과 지급 시점을 바로 알려드려요.</p>
 </header>
 
 <main class="grid">
   <!-- 입력 카드 -->
   <section class="card inputs" aria-label="계산 조건">
-    <p class="card-head">계산 조건</p>
+    <p class="card-head">계산 조건 <span class="chip">변경 즉시 계산</span></p>
 
     <div class="field">
       <div class="field-top">
@@ -67,8 +67,13 @@
 
   <!-- 결과 카드 -->
   <section class="card result" aria-label="계산 결과" aria-live="polite">
-    <p class="card-head">급여 명세 <span class="chip">2026 · 세전</span></p>
+    <p class="card-head">예상 수당 <span class="chip">2026 · 세전</span></p>
 
+    <div class="annual">
+      <span class="annual-name">연간 수당 합계<small id="annualFormula">정근수당 + 가산금 ×12 + 명절휴가비</small></span>
+      <span class="annual-amt"><b class="num" id="annual">8,378,200</b><span class="won">원</span></span>
+    </div>
+    <p class="detail-label">수당별 상세 내역</p>
     <div class="rows">
       <button class="row row-btn" id="jgBtn" type="button" aria-haspopup="dialog">
         <span class="row-name">정근수당 <i class="rate" id="rateTag">50%</i><span class="row-more">연차별 ▸</span></span>
@@ -89,17 +94,13 @@
       <p class="li-note" id="holNote">월봉급액 × 60% · <b>설·추석</b> 각각 지급</p>
     </div>
 
-    <div class="annual">
-      <span class="annual-name">연간 합계<small id="annualFormula">정근수당 + 가산금 ×12 + 명절휴가비</small></span>
-      <span class="annual-amt"><b class="num" id="annual">8,378,200</b><span class="won">원</span></span>
-    </div>
     <div class="stamp-wrap"><span class="stamp" aria-label="제작 @jungbucks">@jungbucks</span></div>
 
     <!-- 시그니처: 월별 수당 지급 타임라인 -->
     <div class="timeline" aria-label="월별 수당 지급 시점">
       <p class="tl-title">언제 들어오나 — 1년 지급 시점</p>
       <div class="tl-track" id="timeline"></div>
-      <div class="tl-legend" aria-hidden="true">
+      <div class="tl-legend" >
         <span><i class="lg jg"></i> 정근수당(1·7월)</span>
         <span><i class="lg hol"></i> 명절휴가비(설·추석)</span>
         <span><i class="lg ga"></i> 가산금(매월)</span>
@@ -110,7 +111,7 @@
 </main>
 
 <div class="actionbar">
-  <button class="btn btn-primary" id="pngBtn" type="button">명세서 이미지로 저장</button>
+  <button class="btn btn-primary" id="pngBtn" type="button">이미지로 저장</button>
   <button class="btn" id="copyBtn" type="button">결과 복사</button>
   <span class="act-msg" id="actMsg" role="status" aria-live="polite"></span>
 </div>
