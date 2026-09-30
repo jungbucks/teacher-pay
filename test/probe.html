@@ -85,6 +85,15 @@ function run() {
     log('타임라인 승급월(8월) 표시', $$('#timeline .tl-cell')[7].classList.contains('promo'));
     setPromo(3);   // 3월 승급(오늘 7월): 1·2월 19호봉 → 정근·명절 모두 분할
     log('3월승급: 정근 분할', $('#jgAmt').classList.contains('split'));
+    const firstJgPay = $('#jgAmt .pay');
+    log('정근 분할: 월→금액→호봉 순서·월 강조',
+      firstJgPay.children[0].classList.contains('pay-month') &&
+      firstJgPay.children[0].textContent === '1월' &&
+      firstJgPay.children[1].classList.contains('num') &&
+      firstJgPay.children[3].classList.contains('pay-tag') &&
+      getComputedStyle(firstJgPay.children[3]).order === '0' &&
+      parseFloat(getComputedStyle(firstJgPay.children[0]).fontSize) >
+        parseFloat(getComputedStyle(firstJgPay.children[3]).fontSize));
     log('3월승급: 연간 8,246,420', num($('#annual').textContent) === 8246420);
     setPromo(0);
   } catch (e) { log('예외: ' + e.message, false); }

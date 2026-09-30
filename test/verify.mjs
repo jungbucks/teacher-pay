@@ -69,5 +69,36 @@ check('computeYear 3월승급: 정근·명절 분할', y3.jgSplit === true && y3
 check('computeYear 3월승급 1월 정근 = 19호봉분', y3.jeonggeun[0].hobong === 19 && y3.jeonggeun[0].amt === Math.round(3361200 * 0.5));
 check('computeYear 3월승급 연합계 = 8,246,420', y3.annual === 8246420);
 
+// 표현층 경계: 승급 분할 행은 지급월 → 금액 → 호봉 순서로 읽혀야 한다.
+const uiNodes = new Map();
+const makeNode = id => {
+  const classes = new Set();
+  return {
+    id, value: id === 'hobong' ? '20' : id === 'years' ? '10' : id === 'promo' ? '3' : '',
+    textContent: '', innerHTML: '', hidden: false, children: [], dataset: {}, offsetWidth: 0,
+    classList: { add: (...xs) => xs.forEach(x => classes.add(x)), remove: (...xs) => xs.forEach(x => classes.delete(x)), contains: x => classes.has(x) },
+    addEventListener() {}, setAttribute() {}, querySelectorAll() { return []; }, closest() { return null; },
+  };
+};
+const uiDocument = {
+  getElementById(id) { if (!uiNodes.has(id)) uiNodes.set(id, makeNode(id)); return uiNodes.get(id); },
+  createElement() { return makeNode('created'); },
+  body: { appendChild() {}, removeChild() {} }, execCommand() { return true; },
+};
+const uiContext = { console, document: uiDocument, navigator: {}, setTimeout() {}, Date };
+uiContext.window = uiContext;
+vm.runInNewContext(
+  read('data/salary-2026.js') + '\n' + read('data/allowance-rules.js') + '\n' + read('js/calc.js') + '\n' + read('js/app.js'),
+  uiContext,
+);
+const splitHtml = uiNodes.get('jgAmt').innerHTML;
+check('정근 분할 표시 = 월 → 금액 → 호봉',
+  /^<span class="pay"><b class="pay-month">1월<\/b><b class="num">[\d,]+<\/b><span class="won">원<\/span><i class="pay-tag">19호봉<\/i><\/span>/.test(splitHtml));
+const css = read('css/style.css');
+const payTagOrder = [...css.matchAll(/(?:^|})\s*\.pay-tag\s*\{([^}]*)\}/g)]
+  .map(m => (m[1].match(/(?:^|;)\s*order\s*:\s*([^;]+)/) || [])[1]?.trim())
+  .filter(Boolean).at(-1) || '0';
+check('정근 분할 시 호봉 태그는 DOM 순서를 뒤집지 않음', payTagOrder === '0');
+
 console.log(fail === 0 ? '== 전체 PASS ==' : `== FAIL ${fail}건 ==`);
 process.exit(fail === 0 ? 0 : 1);

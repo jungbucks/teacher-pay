@@ -64,7 +64,7 @@ function renderAmt(container, payArr, split, unit, labelFn) {
   } else {
     container.classList.add('split');
     container.innerHTML = payArr.map(p =>
-      `<span class="pay"><b class="num">${won(p.amt)}</b><span class="won">${unit}</span><i class="pay-tag">${labelFn(p)} · ${p.hobong}호봉</i></span>`).join('');
+      `<span class="pay"><b class="pay-month">${labelFn(p)}</b><b class="num">${won(p.amt)}</b><span class="won">${unit}</span><i class="pay-tag">${p.hobong}호봉</i></span>`).join('');
   }
   container.classList.remove('tick'); void container.offsetWidth; container.classList.add('tick');
 }
