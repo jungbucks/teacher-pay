@@ -17,7 +17,8 @@ function run() {
     setPromo(0);                                                          // 레거시 검증은 승급 미반영 기준
     log('초기 20호봉 월봉급 3,481,000', num($('#salaryVal').textContent) === 3481000);
     log('정근수당 카드 존재', !!$('#jgAmt'));
-    log('명절휴가비 = 봉급×60%', num($('#holAmt').textContent) === Math.round(3481000 * 0.6));
+    const payNums = sel => $$(sel + ' .pay .num').map(n => num(n.textContent));
+    log('명절휴가비 = 봉급×60% (설·추석 각 줄)', payNums('#holAmt').length === 2 && payNums('#holAmt').every(v => v === Math.round(3481000 * 0.6)));
     // 호봉 40으로 변경 → 즉시 갱신
     const hb = $('#hobong'); hb.value = 40; hb.dispatchEvent(new w.Event('input'));
     log('호봉 40 즉시 반영 6,205,700', num($('#salaryVal').textContent) === 6205700 && $('#hobongVal').textContent === '40');
@@ -30,8 +31,8 @@ function run() {
     log('근무 10년 → 지급률 50%', $('#rateTag').textContent === '50%');
     log('근무 10년 → 가산금 60,000', num($('#gasan').textContent) === 60000);
     // 연간 합계 = 정근×2 + 가산×12 + 명절×2 (승급 미반영)
-    const jg = num($('#jgAmt').textContent), ga = num($('#gasan').textContent), ho = num($('#holAmt').textContent);
-    log('연간 합계 산식 일치(미반영)', num($('#annual').textContent) === jg * 2 + ga * 12 + ho * 2);
+    const jgP = payNums('#jgAmt'), ga = num($('#gasan').textContent), hoP = payNums('#holAmt');
+    log('연간 합계 산식 일치(미반영)', num($('#annual').textContent) === jgP[0] + jgP[1] + ga * 12 + hoP[0] + hoP[1]);
     // + 스텝 버튼
     $('#hbPlus').click();
     log('스텝 버튼 상한 40 유지', $('#hobongVal').textContent === '40');
@@ -79,7 +80,7 @@ function run() {
     yr.value = 10; yr.dispatchEvent(new w.Event('input'));
     setPromo(8);   // 8월 승급: 정근(1·7월) 20호봉 동일→비분할 / 추석 21호봉→명절 분할
     log('오늘월 라벨 7월', $('#todayLabel').textContent === '7월');
-    log('8월승급: 정근 비분할', !$('#jgAmt').classList.contains('split'));
+    log('8월승급: 정근도 2줄·"1·7월 모두 20호봉 기준"', $$('#jgAmt .pay').length === 2 && $('#jgNote').textContent.includes('1·7월 모두 20호봉 기준'));
     log('8월승급: 명절 분할 2줄', $('#holAmt').classList.contains('split') && $$('#holAmt .pay').length === 2);
     log('8월승급: 추석 21호봉 표기', $('#holAmt').textContent.includes('21호봉'));
     log('8월승급: 연간 8,450,020', num($('#annual').textContent) === 8450020);
@@ -124,6 +125,32 @@ function run() {
     log('[A1-2] 복사 텍스트에 672,240·696,200', w.summaryText().includes('672,240원') && w.summaryText().includes('696,200원'));
     log('[A1-2] 이미지 정근 연합 1,368,440', w.drawSlip().texts.some(t => t.startsWith('1,368,440')));
     yr.value = 10; yr.dispatchEvent(new w.Event('input'));
+    // ── [B1] 승급월 6가지 × 오늘 11월: 항상 2줄 + 호봉 기준, 연간 합계는 수정 전과 동일 ──
+    w.__todayMonth = 11;
+    const B1 = [  // [승급월, 정근 기준 문구, 명절 기준 문구, 수정 전 연간 합계(20호봉·10년·오늘 11월)]
+      [0, '1·7월 모두 20호봉 기준', '설·추석 모두 20호봉 기준', 8378200],
+      [1, '1·7월 모두 20호봉 기준', '설·추석 모두 20호봉 기준', 8378200],
+      [3, '승급 반영 · 1·7월 지급분을 각 호봉으로 계산', '승급 반영 · 설·추석 지급분을 각 호봉으로 계산', 8246420],
+      [7, '승급 반영 · 1·7월 지급분을 각 호봉으로 계산', '승급 반영 · 설·추석 지급분을 각 호봉으로 계산', 8246420],
+      [11, '11월 승급 전이라 1·7월 모두 19호봉으로 계산', '11월 승급 전이라 설·추석 모두 19호봉으로 계산', 8114640],
+      [12, '1·7월 모두 20호봉 기준', '설·추석 모두 20호봉 기준', 8378200],
+    ];
+    for (const [pm, jgWant, holWant, annualWant] of B1) {
+      setPromo(pm);
+      const twoLines = sel => $$(sel + ' .pay').length === 2 && $$(sel + ' .pay .pay-tag').every(t => /^\d+호봉$/.test(t.textContent));
+      const copy = w.summaryText(), slip = w.drawSlip().texts.join('\n');
+      const tags = sel => $$(sel + ' .pay').map(p => p.querySelector('.pay-month').textContent + ' ' + p.querySelector('.num').textContent + '원(' + p.querySelector('.pay-tag').textContent + ')');
+      const copyHas = tags('#jgAmt').concat(tags('#holAmt')).every(t => copy.includes(t));
+      const slipHas = tags('#jgAmt').concat(tags('#holAmt')).every(t => slip.includes(t.replace('원(', '(')));
+      log(`[B1] 승급 ${pm || '없음'}: 정근·명절 각 2줄+호봉`, twoLines('#jgAmt') && twoLines('#holAmt'));
+      log(`[B1] 승급 ${pm || '없음'}: 기준 문구`, $('#jgNote').textContent.includes(jgWant) && $('#holNote').textContent.includes(holWant));
+      log(`[B1] 승급 ${pm || '없음'}: 복사·이미지도 지급분별 호봉+기준`, copyHas && slipHas && copy.includes(jgWant) && copy.includes(holWant) && slip.includes(jgWant) && slip.includes(holWant));
+      log(`[B1] 승급 ${pm || '없음'}: 연간 ${annualWant.toLocaleString()} (수정 전과 동일)`, num($('#annual').textContent) === annualWant && w.drawSlip().texts.some(t => num(t) === annualWant));
+      log(`[B1] 승급 ${pm || '없음'}: 범례 ▲ 호봉 승급월 ${pm ? '표시' : '숨김'}`, $('#lgPromo').hidden === !pm && (pm ? getComputedStyle($('#lgPromo')).display !== 'none' : getComputedStyle($('#lgPromo')).display === 'none'));
+    }
+    setPromo(11);
+    log('[B1] 20호봉·11월 승급·오늘 11월: 1월 1,680,600(19호봉) 표시', $('#jgAmt').textContent.includes('1,680,600') && $('#jgAmt').textContent.includes('19호봉'));
+    w.__todayMonth = 7;
     setPromo(0);
   } catch (e) { log('예외: ' + e.message, false); }
   const fails = [...out.querySelectorAll('li')].filter(li => li.textContent.startsWith('FAIL')).length;

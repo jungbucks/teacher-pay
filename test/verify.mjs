@@ -105,6 +105,16 @@ vm.runInNewContext(
 const splitHtml = uiNodes.get('jgAmt').innerHTML;
 check('정근 분할 표시 = 월 → 금액 → 호봉',
   /^<span class="pay"><b class="pay-month">1월<\/b><b class="num">[\d,]+<\/b><span class="won">원<\/span><i class="pay-tag">19호봉<\/i><\/span>/.test(splitHtml));
+// [B1] 호봉 기준 문구(basisNote) — 화면·복사·이미지 공통 함수
+const bn = (h, pm, tm, kind) => uiContext.basisNote(ctx.computeYear(h, 10, pm, tm), kind).text;
+check('[B1] 기준: 승급 없음 → "1·7월 모두 20호봉 기준"', bn(20, null, 11, 'jg') === '1·7월 모두 20호봉 기준');
+check('[B1] 기준: 11월 승급·오늘 11월 → "11월 승급 전이라 1·7월 모두 19호봉으로 계산"', bn(20, 11, 11, 'jg') === '11월 승급 전이라 1·7월 모두 19호봉으로 계산');
+check('[B1] 기준: 3월 승급·오늘 11월 → 기존 "승급 반영 · …" 문구', bn(20, 3, 11, 'hol') === '승급 반영 · 설·추석 지급분을 각 호봉으로 계산');
+check('[B1] 기준: 2월 승급·오늘 1월 명절 → "2월 승급 반영으로 설·추석 모두 21호봉으로 계산"', bn(20, 2, 1, 'hol') === '2월 승급 반영으로 설·추석 모두 21호봉으로 계산');
+// [B1] 연간 합계는 표시 변경 전과 같아야 함(근무 10년 = Phase A 영향 없음). 기대값은 수정 전 코드(d3389f9)에서 뽑은 값.
+const BEFORE = { 0: 8378200, 1: 8378200, 3: 8246420, 7: 8246420, 11: 8114640, 12: 8378200 };   // 20호봉·10년·오늘 11월
+check('[B1] 승급 없음·1·3·7·11·12월 연간 합계 = 수정 전과 동일', Object.entries(BEFORE).every(([pm, v]) => ctx.computeYear(20, 10, +pm || null, 11).annual === v));
+
 const css = read('css/style.css');
 const payTagOrder = [...css.matchAll(/(?:^|})\s*\.pay-tag\s*\{([^}]*)\}/g)]
   .map(m => (m[1].match(/(?:^|;)\s*order\s*:\s*([^;]+)/) || [])[1]?.trim())

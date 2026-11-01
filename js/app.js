@@ -33,6 +33,7 @@ const el = {
   dlgGa: document.getElementById('dlgGa'),
   jgTableBody: document.getElementById('jgTableBody'),
   gaTableBody: document.getElementById('gaTableBody'),
+  lgPromo: document.getElementById('lgPromo'),
 };
 
 const YR_MIN = 0, YR_MAX = 45;
@@ -56,17 +57,31 @@ function state() {
   return { hobong, years, promoMonth, tm, r: computeYear(hobong, years, promoMonth || null, tm) };
 }
 
-/* 금액칸 렌더: 승급으로 갈리면 지급월·호봉 태그와 함께 2줄, 아니면 1줄. */
-function renderAmt(container, payArr, split, unit, labelFn) {
-  if (!split) {
-    container.classList.remove('split');
-    container.innerHTML = `<b class="num">${won(payArr[0].amt)}</b><span class="won">${unit}</span>`;
-  } else {
-    container.classList.add('split');
-    container.innerHTML = payArr.map(p =>
-      `<span class="pay"><b class="pay-month">${labelFn(p)}</b><b class="num">${won(p.amt)}</b><span class="won">${unit}</span><i class="pay-tag">${p.hobong}호봉</i></span>`).join('');
-  }
+/* 금액칸 렌더: 승급월과 상관없이 항상 지급분별 2줄(지급월 → 금액 → 호봉 태그). */
+function renderAmt(container, payArr, unit, labelFn) {
+  container.classList.add('split');
+  container.innerHTML = payArr.map(p =>
+    `<span class="pay"><b class="pay-month">${labelFn(p)}</b><b class="num">${won(p.amt)}</b><span class="won">${unit}</span><i class="pay-tag">${p.hobong}호봉</i></span>`).join('');
   container.classList.remove('tick'); void container.offsetWidth; container.classList.add('tick');
+}
+
+/* 지급분별 호봉 기준 문구 — 화면·복사·이미지 공통. kind = 'jg'(정근 1·7월) | 'hol'(설·추석).
+   · 두 지급분 호봉이 다름 → 기존 "승급 반영 · …" 문구
+   · 둘 다 선택한 호봉   → "1·7월 모두 20호봉 기준"
+   · 둘 다 다른 같은 호봉 → "11월 승급 전이라 1·7월 모두 19호봉으로 계산" */
+function basisNote(r, kind) {
+  const [a, b] = kind === 'jg' ? r.jeonggeun : r.holiday;
+  const both = kind === 'jg' ? '1·7월' : '설·추석';
+  if (a.hobong !== b.hobong) return { mixed: true, text: `승급 반영 · ${both} 지급분을 각 호봉으로 계산` };
+  if (a.hobong === r.hobong) return { mixed: false, text: `${both} 모두 ${a.hobong}호봉 기준` };
+  // 둘 다 선택한 호봉이 아닌 경우: 아래면 아직 승급 전, 위면(예: 오늘 1월·2월 승급의 설·추석) 승급 반영
+  const why = a.hobong < r.hobong ? `${r.promoMonth}월 승급 전이라` : `${r.promoMonth}월 승급 반영으로`;
+  return { mixed: false, text: `${why} ${both} 모두 ${a.hobong}호봉으로 계산` };
+}
+function noteHtml(r, kind) {
+  const n = basisNote(r, kind);
+  if (n.mixed) return `<b>승급 반영</b> · ${kind === 'jg' ? '1·7월' : '설·추석'} 지급분을 각 호봉으로 계산`;
+  return `<b>${n.text}</b> · ${kind === 'jg' ? '월봉급액 × 지급률' : '월봉급액 × 60%'}`;
 }
 
 /* 마지막 render()의 계산 결과 — 화면·결과 복사·이미지 저장이 모두 이 한 객체를 읽는다(따로 계산하지 않음). */
@@ -87,24 +102,21 @@ function render() {
   el.years.setAttribute('aria-valuetext', years + '년');
   el.hobong.setAttribute('aria-valuetext', hobong + '호봉');
 
-  renderAmt(el.jgAmt, r.jeonggeun, r.jgSplit, '원', p => p.month + '월');
-  el.jgNote.innerHTML = r.jgSplit
-    ? `<b>승급 반영</b> · 1·7월 지급분을 각 호봉으로 계산`
-    : `월봉급액 × 지급률 · <b>1월·7월</b> 각각 지급`;
+  renderAmt(el.jgAmt, r.jeonggeun, '원', p => p.month + '월');
+  el.jgNote.innerHTML = noteHtml(r, 'jg');
 
   tick(el.gasan, won(r.gasan));
   el.gasanYear.textContent = won(r.gasanYear);
   el.gasanFlag.hidden = RULES_VERIFIED;
 
-  renderAmt(el.holAmt, r.holiday, r.holSplit, '원', p => p.label);
-  el.holNote.innerHTML = r.holSplit
-    ? `<b>승급 반영</b> · 설·추석 지급분을 각 호봉으로 계산`
-    : `월봉급액 × 60% · <b>설·추석</b> 각각 지급`;
+  renderAmt(el.holAmt, r.holiday, '원', p => p.label);
+  el.holNote.innerHTML = noteHtml(r, 'hol');
 
   tick(el.annual, won(r.annual));
   el.annualFormula.textContent = `정근 ${won(r.jgSum)} + 가산 ${won(r.gasanYear)} + 명절 ${won(r.holSum)}`;
 
   renderTimeline(r);
+  if (el.lgPromo) el.lgPromo.hidden = !promoMonth;   // 승급월 "없음"이면 범례에서 뺀다
 
   const cell = el.hobongTable.children[hobong - HOBONG_MIN];  // 셀은 1~40 순서 → O(1) 접근
   if (cell !== curCell) {
@@ -183,19 +195,18 @@ function openModal(dlg, renderFn) {
 /* 결과 요약 텍스트 */
 function summaryText(v = current || state()) {
   const { hobong, years, promoMonth, tm, r } = v;
-  const jgStr = r.jgSplit
-    ? r.jeonggeun.map(p => `${p.month}월 ${won(p.amt)}원(${p.hobong}호봉)`).join(' + ')
-    : `${won(r.jeonggeun[0].amt)}원(1·7월 각각)`;
-  const holStr = r.holSplit
-    ? r.holiday.map(p => `${p.label} ${won(p.amt)}원(${p.hobong}호봉)`).join(' + ')
-    : `${won(r.holiday[0].amt)}원(설·추석 각각)`;
+  // 화면과 같은 규칙: 항상 지급분별 금액·호봉 + 기준 문구
+  const jgStr = r.jeonggeun.map(p => `${p.month}월 ${won(p.amt)}원(${p.hobong}호봉)`).join(' + ');
+  const holStr = r.holiday.map(p => `${p.label} ${won(p.amt)}원(${p.hobong}호봉)`).join(' + ');
   const promoStr = promoMonth ? `승급월 ${promoMonth}월(오늘 ${tm}월 기준)` : '승급 미반영';
   return [
     '[교사 수당 계산 · 2026년 기준 · 참고용]',
     `현재 ${hobong}호봉 · 근무연수 ${years}년 · ${promoStr}`,
     `· 정근수당 ${jgStr} (지급률 ${r.rate}%)`,
+    `  ↳ ${basisNote(r, 'jg').text}`,
     `· 정근수당 가산금 ${won(r.gasan)}원/월 (연 ${won(r.gasanYear)}원)`,
     `· 명절휴가비 ${holStr}`,
+    `  ↳ ${basisNote(r, 'hol').text}`,
     `· 연간 합계 ${won(r.annual)}원`,
     '※ 개인 상황에 따라 다를 수 있는 참고용입니다. (인사혁신처 봉급표·공무원수당규정 별표2)',
   ].join('\n');
@@ -221,7 +232,7 @@ function fallbackCopy(text, done) {
    화면과 같은 미니멀 톤: 흰 배경 · 얇은 브랜드 액센트(딥그린) · 강조 면은 버터(연간 합계) · 직인/줄무늬 없음. */
 function drawSlip(v = current || state()) {
   const { hobong, years, promoMonth, tm, r } = v;
-  const dpr = 2, W = 640, H = 452;
+  const dpr = 2, W = 640, H = 488;   // 정근·명절에 기준 줄이 1줄씩 늘어 +36
   const cv = document.createElement('canvas');
   cv.width = W * dpr; cv.height = H * dpr;
   const ctx = cv.getContext('2d');
@@ -246,25 +257,22 @@ function drawSlip(v = current || state()) {
   ctx.fillText(`현재 ${hobong}호봉(월봉급 ${won(salaryOf(hobong))}원) · 근무연수 ${years}년${promoNote}`, 28, 80);
 
   let y = 122;
-  const line = (name, amount, unit, note) => {
+  const line = (name, amount, unit, notes) => {
     ctx.fillStyle = INK; ctx.font = F(600, 17); ctx.textAlign = 'left';
     ctx.fillText(name, 28, y);
     ctx.font = P(700, 22); ctx.textAlign = 'right';
     const suffix = unit ? '  ' + unit : '';
     ctx.fillText(won(amount) + suffix, W - 28, y);
     ctx.fillStyle = FAINT; ctx.font = F(400, 12.5); ctx.textAlign = 'left';
-    ctx.fillText(note, 28, y + 20);
-    y += 56;
+    notes.forEach((n, i) => ctx.fillText(n, 28, y + 20 + i * 18));
+    y += 56 + (notes.length - 1) * 18;
   };
-  const jgNote = r.jgSplit
-    ? `승급 반영: 1월 ${won(r.jeonggeun[0].amt)}(${r.jeonggeun[0].hobong}호봉) + 7월 ${won(r.jeonggeun[1].amt)}(${r.jeonggeun[1].hobong}호봉)`
-    : '월봉급액 × 지급률 · 1월·7월 각각 지급';
-  const holNote = r.holSplit
-    ? `승급 반영: 설 ${won(r.holiday[0].amt)}(${r.holiday[0].hobong}호봉) + 추석 ${won(r.holiday[1].amt)}(${r.holiday[1].hobong}호봉)`
-    : '월봉급액 × 60% · 설·추석 각각 지급';
-  line(`정근수당 (연 · ${r.rate}%)`, r.jgSum, '원', jgNote);
-  line('정근수당 가산금', r.gasan, '원/월', `근무연수 구간별 정액 · 매월 → 연 ${won(r.gasanYear)}원`);
-  line('명절휴가비 (연)', r.holSum, '원', holNote);
+  // 화면·복사와 같은 규칙: 항상 지급분별 금액·호봉 + 기준 문구
+  const jgPays = r.jeonggeun.map(p => `${p.month}월 ${won(p.amt)}(${p.hobong}호봉)`).join(' + ');
+  const holPays = r.holiday.map(p => `${p.label} ${won(p.amt)}(${p.hobong}호봉)`).join(' + ');
+  line(`정근수당 (연 · ${r.rate}%)`, r.jgSum, '원', [jgPays, basisNote(r, 'jg').text]);
+  line('정근수당 가산금', r.gasan, '원/월', [`근무연수 구간별 정액 · 매월 → 연 ${won(r.gasanYear)}원`]);
+  line('명절휴가비 (연)', r.holSum, '원', [holPays, basisNote(r, 'hol').text]);
 
   // 연간 합계 — 버터 tint 블록 (시선 집중)
   y += 4;
