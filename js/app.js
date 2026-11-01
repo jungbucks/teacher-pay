@@ -40,6 +40,11 @@ const el = {
   gaTableBody: document.getElementById('gaTableBody'),
   lgPromo: document.getElementById('lgPromo'),
   resetBtn: document.getElementById('resetBtn'),
+  resultCard: document.getElementById('resultCard'),
+  annualBox: document.getElementById('annualBox'),
+  sticky: document.getElementById('stickyTotal'),
+  stickyAmt: document.getElementById('stickyAmt'),
+  stickyMore: document.getElementById('stickyMore'),
 };
 
 const YR_MIN = 0, YR_MAX = 45;
@@ -119,6 +124,14 @@ function render() {
   el.holNote.innerHTML = noteHtml(r, 'hol');
 
   tick(el.annual, won(r.annual));
+  if (FLAGS.stickyTotal && el.stickyAmt) {
+    const t = won(r.annual) + '원';
+    if (el.stickyAmt.textContent !== t) {
+      const first = el.stickyAmt.textContent === '';
+      el.stickyAmt.textContent = t;
+      if (!first) { el.stickyAmt.classList.remove('pulse'); void el.stickyAmt.offsetWidth; el.stickyAmt.classList.add('pulse'); }  // 짧은 강조(reduced-motion이면 CSS가 끔)
+    }
+  }
   el.annualFormula.textContent = `정근 ${won(r.jgSum)} + 가산 ${won(r.gasanYear)} + 명절 ${won(r.holSum)}`;
 
   renderTimeline(r);
@@ -389,6 +402,24 @@ function savePng() {
   }
 }
 
+/* ── 모바일 하단 고정 합계 바 (FLAGS.stickyTotal) ──
+   ≤768px에서만 CSS로 보임. 노란 연간 합계 박스가 화면에 보이는 동안은 숨긴다(IntersectionObserver). */
+function initStickyTotal() {
+  if (!FLAGS.stickyTotal || !el.sticky) return;
+  el.sticky.hidden = false;
+  document.body.classList.add('has-sticky');   // 하단 여백(버튼·푸터를 가리지 않게)
+  el.stickyMore.addEventListener('click', () => {
+    const reduce = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.resultCard.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  });
+  if (typeof window.IntersectionObserver === 'function' && el.annualBox) {
+    // 바 높이만큼 아래를 깎아서, 합계 박스가 바 뒤에 깔려 있을 땐 '보임'으로 치지 않는다
+    new window.IntersectionObserver(entries => {
+      el.sticky.classList.toggle('is-away', entries[entries.length - 1].isIntersecting);
+    }, { rootMargin: '0px 0px -96px 0px' }).observe(el.annualBox);
+  }
+}
+
 el.hobong.addEventListener('input', update);
 el.years.addEventListener('input', update);
 el.hbMinus.addEventListener('click', () => setHobong(+el.hobong.value - 1));
@@ -397,7 +428,10 @@ el.yrMinus.addEventListener('click', () => setYears(+el.years.value - 1));
 el.yrPlus.addEventListener('click', () => setYears(+el.years.value + 1));
 el.hobongTable.addEventListener('click', e => {
   const cell = e.target.closest('.hb-cell');
-  if (cell) setHobong(+cell.dataset.h);
+  if (!cell) return;
+  const from = (current || state()).hobong, to = +cell.dataset.h;
+  setHobong(to);
+  if (to !== from) flash(`${from}호봉 → ${to}호봉으로 바꿨어요`);   // 화면 폭·플래그와 상관없이 알려 준다
 });
 el.copyBtn.addEventListener('click', copyResult);
 el.pngBtn.addEventListener('click', savePng);
@@ -411,3 +445,4 @@ if (FLAGS.persistState) {
   if (el.resetBtn) { el.resetBtn.hidden = false; el.resetBtn.addEventListener('click', resetAll); }
 }
 render();
+initStickyTotal();

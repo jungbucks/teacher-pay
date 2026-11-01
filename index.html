@@ -66,10 +66,10 @@
   </section>
 
   <!-- 결과 카드 -->
-  <section class="card result" aria-label="계산 결과" aria-live="polite">
+  <section class="card result" id="resultCard" aria-label="계산 결과" aria-live="polite">
     <p class="card-head">예상 수당 <span class="chip">2026 · 세전</span></p>
 
-    <div class="annual">
+    <div class="annual" id="annualBox">
       <span class="annual-name">연간 수당 합계<small id="annualFormula">정근수당 + 가산금 ×12 + 명절휴가비</small></span>
       <span class="annual-amt"><b class="num" id="annual">8,378,200</b><span class="won">원</span></span>
     </div>
@@ -147,6 +147,12 @@
   <p><b>2026년 교원 봉급표 기준의 참고용 계산기입니다.</b> 개인 상황(중도 임용·감봉·근무연수 산입 예외 등)에 따라 실제 지급액과 다를 수 있습니다.</p>
   <p class="src">봉급표 출처: 인사혁신처 2026 공무원봉급표 · 수당 규정: 공무원수당 등에 관한 규정(별표2). 글꼴: Paperlogy(OFL).</p>
 </footer>
+
+<!-- 모바일 하단 고정 합계 바 (FLAGS.stickyTotal, ≤768px). 금액은 결과 카드 aria-live와 겹쳐 읽히지 않게 aria-hidden -->
+<div class="sticky-total" id="stickyTotal" hidden>
+  <p class="st-sum"><span class="st-label">연간 합계</span> <b class="st-amt num" id="stickyAmt" aria-hidden="true"></b></p>
+  <button class="st-more" id="stickyMore" type="button" aria-label="계산 결과로 이동">자세히 ▾</button>
+</div>
 
 <!-- 연차별 지급표 모달 (표시 전용 — 검증된 규정 함수 재사용) -->
 <dialog id="dlgJg" class="modal" aria-labelledby="dlgJgTitle">

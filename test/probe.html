@@ -47,6 +47,7 @@ function run() {
     // 호봉표 클릭 → 그 호봉으로 이동
     $$('.hb-cell').find(c => +c.dataset.h === 15).click();
     log('호봉표 클릭 → 15호봉·월봉급 2,889,700', $('#hobongVal').textContent === '15' && num($('#salaryVal').textContent) === 2889700);
+    log('[C1-7] 호봉표 클릭 → status "40호봉 → 15호봉으로 바꿨어요"', $('#actMsg').textContent === '40호봉 → 15호봉으로 바꿨어요');
     log('복사·PNG 버튼 존재', !!$('#copyBtn') && !!$('#pngBtn'));
     // PNG 그리기(다운로드는 생략)가 예외 없이 canvas 생성하는지
     let pngOk = false; try { const cv = w.drawSlip().cv; pngOk = cv && cv.width > 0 && cv.getContext('2d') != null; } catch (e) { pngOk = 'ERR:' + e.message; }

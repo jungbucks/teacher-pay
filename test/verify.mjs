@@ -94,7 +94,7 @@ const makeNode = id => {
 const uiDocument = {
   getElementById(id) { if (!uiNodes.has(id)) uiNodes.set(id, makeNode(id)); return uiNodes.get(id); },
   createElement() { return makeNode('created'); },
-  body: { appendChild() {}, removeChild() {} }, execCommand() { return true; },
+  body: { appendChild() {}, removeChild() {}, classList: { add() {}, remove() {}, toggle() {}, contains: () => false } }, execCommand() { return true; },
 };
 const uiContext = { console, document: uiDocument, navigator: {}, setTimeout() {}, Date };
 uiContext.window = uiContext;

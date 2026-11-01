@@ -202,6 +202,31 @@ input[type="range"] { width: 100%; accent-color: var(--brand); margin: 0.3rem 0 
 .btn-primary:hover { background: var(--brand-strong); border-color: var(--brand-strong); }
 .act-msg { flex-basis: 100%; text-align: center; color: var(--brand); font-weight: 700; font-size: 0.9rem; min-height: 1.1rem; }
 
+/* ── 모바일 하단 고정 합계 바 (FLAGS.stickyTotal) ──
+   ≤768px에서만. 바 radius 22 = 버튼 radius 14 + 안쪽 여백 8 (중첩 라운드). 단색 흰 면 — 유리 효과 없음. */
+.sticky-total { display: none; }
+@media (max-width: 768px) {
+  body.has-sticky { padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px)); }
+  .sticky-total:not([hidden]) {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+    position: fixed; z-index: 20; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    max-width: 40rem; margin: 0 auto; padding: 8px 8px 8px 18px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 22px;
+    box-shadow: 0 8px 28px rgba(20, 30, 25, .16);
+    transition: transform .22s ease, opacity .22s ease, visibility .22s; }
+  .sticky-total.is-away { transform: translateY(calc(100% + 24px)); opacity: 0; visibility: hidden; }
+}
+.st-sum { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 0.5rem; min-width: 0; }
+.st-label { font-size: 0.875rem; font-weight: 600; color: var(--ink-soft); white-space: nowrap; }
+.st-amt { font-family: var(--font-display); font-weight: 900; font-size: 1.3rem; color: var(--brand-strong);
+  white-space: nowrap; border-radius: 6px; padding: 0 0.2rem; margin-left: -0.2rem; }
+.st-amt.pulse { animation: stpulse .7s ease; }
+@keyframes stpulse { 0% { background: var(--butter); } 100% { background: transparent; } }
+.st-more { flex: 0 0 auto; font: inherit; font-weight: 700; font-size: 0.9375rem; color: var(--ink);
+  min-height: 44px; padding: 0 1rem; border: 1px solid var(--line); border-radius: 14px; background: var(--field);
+  cursor: pointer; touch-action: manipulation; }
+.st-more:hover { border-color: var(--brand); }
+
 /* ── 호봉표 ── */
 .tools { max-width: var(--wrap); margin: 1.4rem auto 0; padding: 0 1.25rem; }
 .hobong-table { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
@@ -240,7 +265,10 @@ input[type="range"] { width: 100%; accent-color: var(--brand); margin: 0.3rem 0 
 .colophon b { color: var(--ink-soft); }
 .colophon .src { font-size: 0.82rem; }
 
-@media (prefers-reduced-motion: reduce) { .tick, .modal[open] { animation: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .tick, .modal[open], .st-amt.pulse { animation: none; }
+  .sticky-total:not([hidden]) { transition: none; }
+}
 
 /* ── 모바일 ── */
 @media (max-width: 520px) {

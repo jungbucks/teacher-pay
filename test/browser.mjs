@@ -157,6 +157,138 @@ try {
     check('[B2-6 끔] 페이지 오류 0건', page.errors.length === 0);
     await ctx.close();
   }
+
+  /* ───────── [C1] 모바일 하단 고정 합계 바 ───────── */
+  const barState = page => page.evaluate(() => {
+    const b = document.getElementById('stickyTotal'), r = b.getBoundingClientRect(), cs = getComputedStyle(b);
+    return { shown: cs.display !== 'none' && cs.visibility !== 'hidden' && !b.hidden, away: b.classList.contains('is-away'),
+      top: r.top, bottom: r.bottom, amt: document.getElementById('stickyAmt').textContent, vh: innerHeight, sy: scrollY,
+      pad: getComputedStyle(document.body).paddingBottom };
+  });
+  const won = n => n.toLocaleString('ko-KR');
+  {
+    const { ctx, page } = await newPage({ width: 390, height: 844 });
+    await page.goto(base + '/index.html');
+    await page.waitForTimeout(300);
+    let s = await barState(page);
+    check('[C1-1] 390px: 하단 고정 바 표시 "연간 합계 8,246,420원"', s.shown && !s.away && s.bottom <= s.vh && s.amt === '8,246,420원' &&
+      (await page.textContent('#stickyTotal')).replace(/\s+/g, ' ').includes('연간 합계 8,246,420원'));
+    const plus = await page.evaluate(() => document.getElementById('hbPlus').getBoundingClientRect().bottom);
+    check('[C1] 390px: 첫 화면에 호봉 + 버튼이 바보다 위에 보임', plus < s.top);
+    await page.click('#hbPlus');
+    await page.waitForTimeout(100);
+    const s2 = await barState(page);
+    check('[C1 완료] 390x844에서 호봉 + → 스크롤 없이 바 금액이 바로 바뀜', s2.sy === 0 && s2.shown && !s2.away && s2.amt === won(annualOf(21, 10, 3)) + '원');
+    check('[C1-2] 바뀔 때 짧게 강조(pulse)', await page.evaluate(() => {
+      const a = document.getElementById('stickyAmt'); return a.classList.contains('pulse') && getComputedStyle(a).animationName === 'stpulse';
+    }));
+    check('[C1-6] 바 금액 aria-hidden, 버튼 aria-label "계산 결과로 이동"', await page.evaluate(() =>
+      document.getElementById('stickyAmt').getAttribute('aria-hidden') === 'true' &&
+      document.getElementById('stickyMore').getAttribute('aria-label') === '계산 결과로 이동' &&
+      !document.getElementById('stickyTotal').closest('[aria-live]')));
+    check('[C1-5] body 하단 여백(바 높이 + safe-area 자리)', parseFloat(s2.pad) >= (s2.bottom - s2.top) + 12);
+    // 맨 아래까지 내렸을 때 푸터·버튼이 바에 가리지 않음
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(400);
+    const end = await page.evaluate(() => {
+      const bar = document.getElementById('stickyTotal').getBoundingClientRect();
+      const last = [...document.querySelectorAll('.colophon p')].at(-1).getBoundingClientRect();
+      return { lastBottom: last.bottom, barTop: bar.top, barShown: getComputedStyle(document.getElementById('stickyTotal')).visibility !== 'hidden' };
+    });
+    check('[C1-5] 맨 아래에서 푸터 마지막 줄이 바 위에 보임', end.barShown && end.lastBottom <= end.barTop);
+    // 자세히 → 결과 카드로 이동, 연간 합계 박스가 보이면 바가 숨음
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.waitForTimeout(300);
+    await page.click('#stickyMore');
+    await page.waitForTimeout(1200);
+    const s3 = await barState(page);
+    const cardTop = await page.evaluate(() => document.getElementById('resultCard').getBoundingClientRect().top);
+    check('[C1-3] 자세히 → 계산 결과 카드로 스크롤', s3.sy > 300 && Math.abs(cardTop) < 40);
+    check('[C1-4 완료] 결과 카드(연간 합계 박스)까지 내려가면 바가 사라짐', s3.away && !s3.shown && !(await page.isVisible('#stickyMore')));
+    // 호봉표 행 클릭 → status 안내 + 바 갱신(합계 박스가 화면 밖일 때)
+    await page.evaluate(() => { document.querySelector('.hobong-table').open = true; document.querySelector('.hb-cell[data-h="25"]').scrollIntoView({ block: 'center' }); });
+    await page.waitForTimeout(300);
+    const before = await page.evaluate(() => +document.getElementById('hobong').value);
+    await page.click('.hb-cell[data-h="25"]');
+    await page.waitForTimeout(300);
+    const s4 = await barState(page);
+    check(`[C1-7] 390px 호봉표 클릭 → "${before}호봉 → 25호봉으로 바꿨어요"`, (await page.textContent('#actMsg')) === `${before}호봉 → 25호봉으로 바꿨어요`);
+    check('[C1] 390px 호봉표 클릭 → 바가 보이고 금액 갱신', s4.shown && !s4.away && s4.amt === won(annualOf(25, 10, 3)) + '원');
+    check('[C1] 390px 페이지 오류 0건', page.errors.length === 0);
+    await ctx.close();
+  }
+  for (const width of [320, 390]) {
+    const { ctx, page } = await newPage({ width, height: 700 });
+    await page.goto(base + '/index.html?y=25&h=40&m=11');
+    const ov = await page.evaluate(() => {
+      const b = document.getElementById('stickyTotal').getBoundingClientRect();
+      return { sw: document.documentElement.scrollWidth, iw: innerWidth, barL: b.left, barR: b.right };
+    });
+    check(`[C1] ${width}px: 가로 넘침 없음(고정 바 포함)`, ov.sw <= ov.iw && ov.barL >= 0 && ov.barR <= ov.iw);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await newPage({ width: 390, height: 844, reducedMotion: 'reduce' });
+    await page.goto(base + '/index.html');
+    await page.click('#hbPlus');
+    const anim = await page.evaluate(() => {
+      const a = document.getElementById('stickyAmt'); return { name: getComputedStyle(a).animationName, amt: a.textContent };
+    });
+    check('[C1-2] reduced-motion: 애니메이션 없이 금액만 갱신', anim.name === 'none' && anim.amt === won(annualOf(21, 10, 3)) + '원');
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await newPage({ width: 1280, height: 900 });
+    await page.goto(base + '/index.html');
+    const s = await barState(page);
+    check('[C1 완료] 1280px: 고정 바 안 나옴·하단 여백 없음', !s.shown && s.pad === '0px');
+    await page.evaluate(() => { document.querySelector('.hobong-table').open = true; });
+    await page.click('.hb-cell[data-h="25"]');
+    check('[C1-7] 1280px 호봉표 클릭 → "20호봉 → 25호봉으로 바꿨어요"', (await page.textContent('#actMsg')) === '20호봉 → 25호봉으로 바꿨어요');
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await newPage({ width: 390, height: 844, flags: { stickyTotal: false } });
+    await page.goto(base + '/index.html');
+    const s = await barState(page);
+    check('[C1-8 끔] 390px: 고정 바·하단 여백 없음', !s.shown && s.pad === '0px' && !(await page.evaluate(() => document.body.classList.contains('has-sticky'))));
+    await page.evaluate(() => { document.querySelector('.hobong-table').open = true; });
+    await page.click('.hb-cell[data-h="25"]');
+    check('[C1-8 끔] 호봉표 안내는 그대로 "20호봉 → 25호봉으로 바꿨어요"', (await page.textContent('#actMsg')) === '20호봉 → 25호봉으로 바꿨어요');
+    check('[C1-8 끔] 페이지 오류 0건', page.errors.length === 0);
+    await ctx.close();
+  }
+
+  /* ───────── FLAGS 끔 = 이전 버전과 같은 화면인지 (BASELINE_DIR 줬을 때만) ─────────
+     BASELINE_DIR=이전 버전 폴더, BASELINE_FLAGS=이 버전에서 끌 플래그(쉼표). 같은 입력을 넣고 결과·복사·배치를 비교. */
+  if (baseline) {
+    const off = Object.fromEntries((process.env.BASELINE_FLAGS || 'stickyTotal,persistState').split(',').map(k => [k.trim(), false]));
+    const finger = async (url, opts, origin) => {
+      const { ctx, page } = await newPage(opts);
+      await page.goto(url + '/index.html');
+      await setInputs(page, { y: 7, h: 15, m: 11 });
+      const f = await page.evaluate(() => {
+        const rect = s => { const r = document.querySelector(s).getBoundingClientRect(); return [r.x, r.y, r.width, r.height].map(Math.round).join(','); };
+        return {
+          result: document.getElementById('resultCard') ? document.getElementById('resultCard').innerText : document.querySelector('.card.result').innerText,
+          summary: summaryText(),
+          scrollH: document.documentElement.scrollHeight, bodyPad: getComputedStyle(document.body).paddingBottom,
+          chip: rect('.inputs .chip'), png: rect('#pngBtn'), copy: rect('#copyBtn'), foot: rect('.colophon'),
+          search: location.search, stored: (() => { try { return localStorage.getItem('teacherPay.v1'); } catch (e) { return 'ERR'; } })(),
+          resetVisible: !!document.getElementById('resetBtn') && !document.getElementById('resetBtn').hidden,
+        };
+      });
+      f.summary = f.summary.split(origin).join('ORIGIN');
+      f.errors = page.errors.length;
+      await ctx.close();
+      return f;
+    };
+    for (const width of [390, 1280]) {
+      const a = await finger(base, { width, height: 844, flags: off }, base);
+      const b = await finger(baseline.base, { width, height: 844 }, baseline.base);
+      for (const k of Object.keys(b)) check(`[FLAGS 끔 ${Object.keys(off).join('+')}] ${width}px ${k} 이전 버전과 같음`, JSON.stringify(a[k]) === JSON.stringify(b[k]));
+    }
+  }
 } catch (e) {
   check('예외: ' + e.message, false);
 } finally {
