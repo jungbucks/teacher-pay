@@ -1,4 +1,9 @@
 /* app.js — 입력을 계산에 묶고 급여대장에 live 렌더 + 호봉표·복사·PNG. 계산은 calc.js에 위임. */
+
+/* 기능 스위치 — false로 바꾸면 그 기능이 생기기 전 동작과 똑같아진다.
+   stickyTotal: 모바일(≤768px) 하단 고정 합계 바 / persistState: URL 쿼리·저장·초기화·복사 링크 */
+const FLAGS = { stickyTotal: true, persistState: true };
+
 const won = n => n.toLocaleString('ko-KR');
 
 const el = {
@@ -34,6 +39,7 @@ const el = {
   jgTableBody: document.getElementById('jgTableBody'),
   gaTableBody: document.getElementById('gaTableBody'),
   lgPromo: document.getElementById('lgPromo'),
+  resetBtn: document.getElementById('resetBtn'),
 };
 
 const YR_MIN = 0, YR_MAX = 45;
@@ -126,8 +132,66 @@ function render() {
   }
 }
 
-function setHobong(v) { el.hobong.value = Math.min(HOBONG_MAX, Math.max(HOBONG_MIN, v)); render(); }
-function setYears(v) { el.years.value = Math.min(YR_MAX, Math.max(YR_MIN, v)); render(); }
+/* 사용자가 입력을 바꿨을 때: 다시 그리고 상태를 남긴다(persistState). */
+function update() { render(); persist(); }
+
+function setHobong(v) { el.hobong.value = Math.min(HOBONG_MAX, Math.max(HOBONG_MIN, v)); update(); }
+function setYears(v) { el.years.value = Math.min(YR_MAX, Math.max(YR_MIN, v)); update(); }
+
+/* ── 입력값 저장·공유 링크·초기화 (FLAGS.persistState) ──
+   시작값 우선순위: URL 쿼리(?y=근무연수&h=호봉&m=승급월) > localStorage(teacherPay.v1) > 기본값.
+   항목별로 검증해서, 범위 밖이거나 정수가 아니면 그 항목만 다음 순위 값을 쓴다. */
+const STORE_KEY = 'teacherPay.v1';
+const DEFAULTS = { y: 10, h: 20, m: 3 };
+const RANGE = { y: [YR_MIN, YR_MAX], h: [HOBONG_MIN, HOBONG_MAX], m: [0, 12] };   // m 0 = 승급월 없음
+
+function validInt(v, [lo, hi]) {
+  let n = null;
+  if (typeof v === 'number') n = v;
+  else if (typeof v === 'string' && /^\d{1,3}$/.test(v.trim())) n = Number(v.trim());
+  return Number.isInteger(n) && n >= lo && n <= hi ? n : null;
+}
+function readQuery() {
+  try { const p = new URLSearchParams(location.search); return { y: p.get('y'), h: p.get('h'), m: p.get('m') }; }
+  catch (e) { return {}; }
+}
+function readStore() {
+  try { const o = JSON.parse(localStorage.getItem(STORE_KEY)); return o && typeof o === 'object' ? o : {}; }
+  catch (e) { return {}; }   // 저장값이 깨졌거나 저장소를 못 쓰면 무시
+}
+function initialValues() {
+  const q = readQuery(), s = readStore(), out = {};
+  for (const k of ['y', 'h', 'm']) {
+    const fromQ = validInt(q[k], RANGE[k]), fromS = validInt(s[k], RANGE[k]);
+    out[k] = fromQ !== null ? fromQ : fromS !== null ? fromS : DEFAULTS[k];
+  }
+  return out;
+}
+function applyValues(v) {
+  el.years.value = v.y; el.hobong.value = v.h; el.promo.value = String(v.m);
+}
+/* 지금 조건이 담긴 전체 URL (다른 쿼리·해시는 보존) */
+function shareUrl(v = current) {
+  const u = new URL(location.href);
+  u.searchParams.set('y', v.years); u.searchParams.set('h', v.hobong); u.searchParams.set('m', v.promoMonth);
+  return u.toString();
+}
+function persist() {
+  if (!FLAGS.persistState || !current) return;
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({ y: current.years, h: current.hobong, m: current.promoMonth })); } catch (e) { /* 저장 불가 환경 */ }
+  try { history.replaceState(history.state, '', shareUrl()); } catch (e) { /* file:// 등 URL 변경 불가 환경 */ }
+}
+function resetAll() {
+  applyValues(DEFAULTS);
+  render();
+  try { localStorage.removeItem(STORE_KEY); } catch (e) { /* noop */ }
+  try {
+    const u = new URL(location.href);
+    ['y', 'h', 'm'].forEach(k => u.searchParams.delete(k));
+    history.replaceState(history.state, '', u.toString());
+  } catch (e) { /* noop */ }
+  flash('기본값으로 돌렸어요');
+}
 
 /* 전체 호봉표 렌더 (클릭하면 그 호봉으로 이동) */
 function renderHobongTable() {
@@ -199,6 +263,8 @@ function summaryText(v = current || state()) {
   const jgStr = r.jeonggeun.map(p => `${p.month}월 ${won(p.amt)}원(${p.hobong}호봉)`).join(' + ');
   const holStr = r.holiday.map(p => `${p.label} ${won(p.amt)}원(${p.hobong}호봉)`).join(' + ');
   const promoStr = promoMonth ? `승급월 ${promoMonth}월(오늘 ${tm}월 기준)` : '승급 미반영';
+  let link = '';
+  if (FLAGS.persistState) { try { link = shareUrl(v); } catch (e) { link = ''; } }   // 받은 사람이 같은 조건으로 열 수 있게
   return [
     '[교사 수당 계산 · 2026년 기준 · 참고용]',
     `현재 ${hobong}호봉 · 근무연수 ${years}년 · ${promoStr}`,
@@ -209,10 +275,15 @@ function summaryText(v = current || state()) {
     `  ↳ ${basisNote(r, 'hol').text}`,
     `· 연간 합계 ${won(r.annual)}원`,
     '※ 개인 상황에 따라 다를 수 있는 참고용입니다. (인사혁신처 봉급표·공무원수당규정 별표2)',
-  ].join('\n');
+  ].concat(link ? [link] : []).join('\n');
 }
 
-function flash(msg) { el.actMsg.textContent = msg; setTimeout(() => { el.actMsg.textContent = ''; }, 2000); }
+let flashTimer = null;
+function flash(msg) {
+  el.actMsg.textContent = msg;
+  clearTimeout(flashTimer);   // 연달아 띄울 때 앞 메시지의 타이머가 새 메시지를 일찍 지우지 않게
+  flashTimer = setTimeout(() => { el.actMsg.textContent = ''; }, 2000);
+}
 
 function copyResult() {
   const text = summaryText();
@@ -318,8 +389,8 @@ function savePng() {
   }
 }
 
-el.hobong.addEventListener('input', render);
-el.years.addEventListener('input', render);
+el.hobong.addEventListener('input', update);
+el.years.addEventListener('input', update);
 el.hbMinus.addEventListener('click', () => setHobong(+el.hobong.value - 1));
 el.hbPlus.addEventListener('click', () => setHobong(+el.hobong.value + 1));
 el.yrMinus.addEventListener('click', () => setYears(+el.years.value - 1));
@@ -332,7 +403,11 @@ el.copyBtn.addEventListener('click', copyResult);
 el.pngBtn.addEventListener('click', savePng);
 el.jgBtn.addEventListener('click', () => openModal(el.dlgJg, renderJgTable));
 el.gaBtn.addEventListener('click', () => openModal(el.dlgGa, renderGaTable));
-el.promo.addEventListener('change', render);
+el.promo.addEventListener('change', update);
 
 renderHobongTable();
+if (FLAGS.persistState) {
+  applyValues(initialValues());
+  if (el.resetBtn) { el.resetBtn.hidden = false; el.resetBtn.addEventListener('click', resetAll); }
+}
 render();

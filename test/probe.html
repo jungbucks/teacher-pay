@@ -153,6 +153,7 @@ function run() {
     w.__todayMonth = 7;
     setPromo(0);
   } catch (e) { log('예외: ' + e.message, false); }
+  try { w.localStorage.removeItem('teacherPay.v1'); } catch (e) { /* file://에서 저장소가 막혀 있으면 할 일 없음 */ }
   const fails = [...out.querySelectorAll('li')].filter(li => li.textContent.startsWith('FAIL')).length;
   document.title = `PROBE ${out.querySelectorAll('li').length}건 — FAIL ${fails}`;
 }
