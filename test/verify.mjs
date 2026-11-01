@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 const src = read('data/salary-2026.js') + '\n' + read('data/allowance-rules.js') + '\n' + read('js/calc.js');
-const ctx = vm.runInNewContext(src + ';({SALARY_2026,HOBONG_MIN,HOBONG_MAX,jeonggeunRate,gasangeum,HOLIDAY_RATE,RULES_VERIFIED,computeAll,salaryOf,hobongAtMonth,computeYear})', {});
+const ctx = vm.runInNewContext(src + ';({SALARY_2026,HOBONG_MIN,HOBONG_MAX,JG_RATE_TIERS,jeonggeunRate,gasangeum,HOLIDAY_RATE,RULES_VERIFIED,computeAll,salaryOf,hobongAtMonth,computeYear})', {});
 
 let fail = 0;
 const check = (name, ok) => { console.log((ok ? 'PASS' : 'FAIL') + ' ' + name); if (!ok) fail++; };
@@ -20,9 +20,20 @@ check('앵커 9호봉 = 2,495,600', S[9] === 2495600);
 check('앵커 40호봉 = 6,205,700', S[40] === 6205700);
 check('앵커 1호봉 = 2,041,500', S[1] === 2041500);
 
-// 정근수당 지급률 (2026-07-19 사용자 공식 확인: 10,10,15,20,20,25,30,35,40,45 → 10년이상 50)
-check('지급률 표 0~9년 일치', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(y => ctx.jeonggeunRate(y)).join(',') === '10,10,15,20,20,25,30,35,40,45');
+// 정근수당 지급률 (별표2 <개정 2025.1.3> 원문 대조 2026-11-02: 2년 미만 10 / 5년 미만 20 / … / 10년 이상 50)
+check('지급률 표 0~9년 일치', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(y => ctx.jeonggeunRate(y)).join(',') === '10,10,20,20,20,25,30,35,40,45');
 check('지급률 10년이상 = 50%', ctx.jeonggeunRate(10) === 50 && ctx.jeonggeunRate(30) === 50);
+check('[A1-1] 0·1년 10% / 2·3·4년 20% / 5년 25% / 10년 50%',
+  ctx.jeonggeunRate(0) === 10 && ctx.jeonggeunRate(1) === 10 &&
+  ctx.jeonggeunRate(2) === 20 && ctx.jeonggeunRate(3) === 20 && ctx.jeonggeunRate(4) === 20 &&
+  ctx.jeonggeunRate(5) === 25 && ctx.jeonggeunRate(10) === 50);
+check('지급률 구간표가 0~45년을 빈틈없이 덮음', Array.from({ length: 46 }, (_, y) => ctx.JG_RATE_TIERS.filter(t => y >= t.lo && y <= t.hi).length).every(n => n === 1));
+// [A1-2] 근무 2년·20호봉·3월 승급(오늘 3월 이후) → 1월 19호봉 3,361,200×20% + 7월 20호봉 3,481,000×20%
+for (const tm of [3, 7, 11]) {
+  const a2 = ctx.computeYear(20, 2, 3, tm);
+  check(`[A1-2] 2년·20호봉·3월승급(오늘 ${tm}월) 정근 = 672,240 + 696,200 = 1,368,440`,
+    a2.jeonggeun[0].amt === 672240 && a2.jeonggeun[1].amt === 696200 && a2.jgSum === 1368440);
+}
 
 // 가산금 경계 (2026-07-19 확인, 법 개정: 5년미만도 3만)
 check('가산금 4년(5년미만) = 30,000', ctx.gasangeum(4) === 30000);

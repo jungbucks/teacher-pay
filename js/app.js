@@ -69,8 +69,12 @@ function renderAmt(container, payArr, split, unit, labelFn) {
   container.classList.remove('tick'); void container.offsetWidth; container.classList.add('tick');
 }
 
+/* 마지막 render()의 계산 결과 — 화면·결과 복사·이미지 저장이 모두 이 한 객체를 읽는다(따로 계산하지 않음). */
+let current = null;
+
 function render() {
-  const { hobong, years, promoMonth, tm, r } = state();
+  current = state();
+  const { hobong, years, promoMonth, tm, r } = current;
   el.yearsVal.textContent = years;
   el.hobongVal.textContent = hobong;
   el.salaryVal.textContent = won(salaryOf(hobong));
@@ -147,13 +151,9 @@ function renderTimeline(r) {
 
 /* ── 연차별 지급표 모달 (표시 전용 — jeonggeunRate·gasangeum 재사용, 숫자 안 지어냄) ── */
 function renderJgTable(years) {
-  const cur = years >= 10 ? 10 : Math.max(0, years);
-  let html = '';
-  for (let k = 0; k <= 10; k++) {
-    const label = k === 0 ? '1년 미만' : k === 10 ? '10년 이상' : k + '년';
-    html += `<tr class="${k === cur ? 'cur' : ''}"><td>${label}</td><td class="amt">${jeonggeunRate(k)}%</td></tr>`;
-  }
-  el.jgTableBody.innerHTML = html;
+  const cur = jeonggeunTier(years);   // 계산과 같은 구간 데이터(JG_RATE_TIERS)로 표를 그린다
+  el.jgTableBody.innerHTML = JG_RATE_TIERS.map(t =>
+    `<tr class="${t === cur ? 'cur' : ''}"><td>${t.label}</td><td class="amt">${t.rate}%</td></tr>`).join('');
 }
 
 const GA_TIERS = [
@@ -172,7 +172,7 @@ function renderGaTable(years) {
   }).join('');
 }
 function openModal(dlg, renderFn) {
-  renderFn(state().years);
+  renderFn((current || state()).years);
   if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
 }
 [el.dlgJg, el.dlgGa].forEach(dlg => {
@@ -181,8 +181,8 @@ function openModal(dlg, renderFn) {
 });
 
 /* 결과 요약 텍스트 */
-function summaryText() {
-  const { hobong, years, promoMonth, tm, r } = state();
+function summaryText(v = current || state()) {
+  const { hobong, years, promoMonth, tm, r } = v;
   const jgStr = r.jgSplit
     ? r.jeonggeun.map(p => `${p.month}월 ${won(p.amt)}원(${p.hobong}호봉)`).join(' + ')
     : `${won(r.jeonggeun[0].amt)}원(1·7월 각각)`;
@@ -219,13 +219,16 @@ function fallbackCopy(text, done) {
 
 /* 명세서를 canvas에 직접 그려 PNG로 저장 (라이브러리 없음).
    화면과 같은 미니멀 톤: 흰 배경 · 얇은 브랜드 액센트(딥그린) · 강조 면은 버터(연간 합계) · 직인/줄무늬 없음. */
-function drawSlip() {
-  const { hobong, years, promoMonth, tm, r } = state();
+function drawSlip(v = current || state()) {
+  const { hobong, years, promoMonth, tm, r } = v;
   const dpr = 2, W = 640, H = 452;
   const cv = document.createElement('canvas');
   cv.width = W * dpr; cv.height = H * dpr;
   const ctx = cv.getContext('2d');
   ctx.scale(dpr, dpr);
+  const texts = [];   // 그린 글자 기록 — 화면·복사와 같은 값인지 검증용
+  const fillText = ctx.fillText.bind(ctx);
+  ctx.fillText = (t, x, y) => { texts.push(String(t)); fillText(t, x, y); };
   const F = (w, s) => `${w} ${s}px "Pretendard","Malgun Gothic",sans-serif`;      // 본문
   const P = (w, s) => `${w} ${s}px "Paperlogy","Pretendard","Malgun Gothic",sans-serif`; // 디스플레이·숫자
   const INK = '#1a1d1b', SOFT = '#5b6560', FAINT = '#8a938d', BRAND = '#013e37', TINT = '#ffefb3';
@@ -286,7 +289,7 @@ function drawSlip() {
   ctx.fillStyle = BRAND; ctx.font = P(700, 14); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText('@jungbucks', 0, 1);
   ctx.restore();
-  return { cv, hobong, years };
+  return { cv, hobong, years, texts };
 }
 
 function savePng() {

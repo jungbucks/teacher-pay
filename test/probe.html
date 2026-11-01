@@ -64,7 +64,8 @@ function run() {
     log('정근/가산 행 버튼화', !!$('#jgBtn') && $('#jgBtn').tagName === 'BUTTON' && !!$('#gaBtn') && $('#gaBtn').tagName === 'BUTTON');
     log('연차별 모달 2종 존재', !!dlgJg && !!dlgGa);
     $('#jgBtn').click();
-    log('정근 모달 열림·11행', dlgJg.open === true && $$('#jgTableBody tr').length === 11);
+    log('정근 모달 열림·8구간(별표2 구간)', dlgJg.open === true && $$('#jgTableBody tr').length === 8);
+    log('[A1] 정근 모달 출처 끝 "(2025.1.3 개정 반영)"', dlgJg.querySelector('.modal-foot').textContent.trim().endsWith('(2025.1.3 개정 반영)'));
     log('정근 모달 현재행 1개 하이라이트', $$('#jgTableBody tr.cur').length === 1);
     dlgJg.close();
     $('#gaBtn').click();
@@ -95,6 +96,34 @@ function run() {
       parseFloat(getComputedStyle(firstJgPay.children[0]).fontSize) >
         parseFloat(getComputedStyle(firstJgPay.children[3]).fontSize));
     log('3월승급: 연간 8,246,420', num($('#annual').textContent) === 8246420);
+    // ── [A1] 정근수당 지급률 2025.1.3 개정: 모달·결과 카드·복사·이미지가 같은 지급률 ──
+    const rateCase = (y, want) => {
+      yr.value = y; yr.dispatchEvent(new w.Event('input'));
+      $('#jgBtn').click();
+      const curRow = $('#jgTableBody tr.cur');
+      const modalRate = curRow ? curRow.querySelector('.amt').textContent : '';
+      dlgJg.close();
+      const copy = w.summaryText();
+      const slip = w.drawSlip().texts.join('\n');
+      return $('#rateTag').textContent === want && modalRate === want &&
+        copy.includes('지급률 ' + want) && slip.includes(want);
+    };
+    log('[A1-1] 0년 10% (카드·모달·복사·이미지)', rateCase(0, '10%'));
+    log('[A1-1] 1년 10%', rateCase(1, '10%'));
+    log('[A1-1] 2년 20%', rateCase(2, '20%'));
+    log('[A1-1] 3년 20%', rateCase(3, '20%'));
+    log('[A1-1] 4년 20%', rateCase(4, '20%'));
+    log('[A1-1] 5년 25%', rateCase(5, '25%'));
+    log('[A1-1] 10년 50%', rateCase(10, '50%'));
+    yr.value = 2; yr.dispatchEvent(new w.Event('input'));   // 2년·20호봉·3월승급(오늘 7월)
+    $('#jgBtn').click();
+    log('[A1] 2년 → 모달 현재 구간 "2년 ~ 4년"', $('#jgTableBody tr.cur td').textContent === '2년 ~ 4년');
+    dlgJg.close();
+    const jgLines = $$('#jgAmt .pay').map(p => num(p.querySelector('.num').textContent));
+    log('[A1-2] 2년·20호봉·3월승급: 1월 672,240 + 7월 696,200', jgLines[0] === 672240 && jgLines[1] === 696200);
+    log('[A1-2] 복사 텍스트에 672,240·696,200', w.summaryText().includes('672,240원') && w.summaryText().includes('696,200원'));
+    log('[A1-2] 이미지 정근 연합 1,368,440', w.drawSlip().texts.some(t => t.startsWith('1,368,440')));
+    yr.value = 10; yr.dispatchEvent(new w.Event('input'));
     setPromo(0);
   } catch (e) { log('예외: ' + e.message, false); }
   const fails = [...out.querySelectorAll('li')].filter(li => li.textContent.startsWith('FAIL')).length;
